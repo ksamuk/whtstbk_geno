@@ -52,4 +52,7 @@ wht_genpop <- genind2genpop(wht_genind, pop = meta_df$pop)
 save(wht_genind, file = "data/adegenet/wht_bi_snps_genpop.R")
 write.table(wht_genpop , file = "data/hierfstat/wht_genpop.gen")
 
+plot(wht_genind)
+
+
 
