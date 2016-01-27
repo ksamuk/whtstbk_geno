@@ -38,13 +38,16 @@ chr4_frq <- chr4_frq %>%
 chr4_frq %>%
   ungroup %>%
   filter(year > 2012) %>%
-  group_by(chr, pos, species) %>%
+  group_by(chr, pos, species, pop) %>%
   summarise(alt_frq = mean(alt_frq)) %>%
   ungroup %>%
-  mutate(pos = as.numeric(as.factor(pos))) %>%
+  #mutate(pos = as.numeric(as.factor(pos))) %>%
+  filter(!is.na(alt_frq)) %>%
+  filter(!grepl("RT_cmn|GC_wht", pop)) %>%
+  mutate(pop = reorder(pop, as.numeric(as.factor(species)))) %>%
   #mutate(species = as.numeric(as.factor(species))) %>%
   #mutate(pop = reorder(pop, species)) %>%
-  ggplot(aes(x = pos, y = species, color = alt_frq))+
+  ggplot(aes(x = pos, y = pop, color = alt_frq))+
   geom_tile()+
   scale_color_viridis()
   

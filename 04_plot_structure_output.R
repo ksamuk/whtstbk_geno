@@ -12,7 +12,6 @@ list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE,
 #structure_files <- list.files("data/structure/results_rename", pattern = "simple.[0-9].meanQ",full.names = TRUE)
 structure_files <- list.files("data/structure/results", pattern = "simple_noXIX.[0-9].meanQ",full.names = TRUE)
 
-
 # read in base metadata file
 meta_df <- read.csv("metadata/mega_meta.csv")
 
@@ -48,9 +47,13 @@ tmp %>%
   mutate(pop = ifelse(grepl("CP", pop), "CP", as.character(pop))) %>%
   mutate(id = reorder(id, as.numeric(k1_val))) %>%
   filter(!pop=="MM",!pop=="NHR",!pop=="QR",!pop=="MM", !pop=="LD", !pop=="CB", !pop=="SP") %>%
+  #mutate(id = reorder(id, as.numeric(major_k))) %>%
+  ungroup() %>%
+  mutate(id = reorder(id, as.numeric(k3_val))) %>%
+  #filter(!pop=="MM",!pop=="NHR",!pop=="QR",!pop=="MM", !pop=="LD", !pop=="CB", !pop=="SP") %>%
   ggplot(aes(x = id, y = q.value, fill = factor(k)))+
   #ggplot(aes(x=id, y=q.value, fill=factor(pop)))+
-  geom_bar(stat="identity", width=1, color = "black")+
+  geom_bar(stat="identity", width = 2, color = "black")+
   #geom_bar(aes(x=id,fill=pop, y=.01),stat="identity",width=1,position="stack")+
   #geom_text(aes(label=pop))+
   theme_classic()+

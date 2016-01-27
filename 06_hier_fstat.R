@@ -137,7 +137,7 @@ fst_combined_long %>%
   sample_frac(1) %>%
   #filter(fst.outlier.male == TRUE | fst.outlier.female == TRUE) %>%
   ggplot(aes(x = pos, y = fst, color = fst_class)) +
-  stat_smooth(span = 10)+
+  stat_smooth(span = 0.2, n = 100,  se = FALSE)+
   facet_wrap(~chr)
 
 fst_combined_long %>%
