@@ -53,15 +53,33 @@ recomb_rates <- recomb_rates %>%
   group_by(chr) %>%
   mutate(pos1 = mid, pos2 = lead(mid)) %>%
   mutate(phys_dist = lead(mid) - mid) %>%
-  mutate(ftc_dist = lead(gen_pos_ftc) - gen_pos_ftc)%>%
-  mutate(bepa_dist = lead(gen_pos_bepa) - gen_pos_bepa)
+  mutate(ftc_dist = abs(lead(gen_pos_ftc) - gen_pos_ftc))%>%
+  mutate(bepa_dist = abs(lead(gen_pos_bepa) - gen_pos_bepa)) %>%
+	ungroup
 
-View(recomb_rates)
+recomb_rates <- recomb_rates %>%
+	filter(!is.na(pos2)) %>%
+	filter(!is.na(gen_pos_ftc) | !is.na(gen_pos_bepa)) %>%
+	rowwise %>%
+	mutate(avg_dist = mean(c(ftc_dist, bepa_dist), na.rm = TRUE)) %>%
+	mutate(recomb_rate = avg_dist / phys_dist) %>%
+	rowwise %>%
+	mutate(mid = floor(mean(c(pos1, pos2)))) %>%
+	select(chr, mid, recomb_rate, avg_dist) %>%
+	filter(!is.nan(recomb_rate))
+
+# just FTC maps
+# recomb_rates_ftc <- recomb_rates %>%
+# 	select(-contains("bepa")) %>%
+# 	filter(!is.na(pos2)) %>%
+# 	filter(!is.na(gen_pos_ftc)) %>%
+# 	mutate(recomb_rate = ftc_dist / phys_dist) %>%
+# 	select(chr, mid, recomb_rate, gen_pos_ftc) %>%
+# 	filter(!is.na(recomb_rate))
 
 
-# 
-
-
+	
+write.table(recomb_rates, file = "metadata/shapeit_maps/glazer_recomb.txt", quote = FALSE, row.names = FALSE)
 
 
 

@@ -135,10 +135,12 @@ fst_combined_long <- data.frame(chr = fst_combined_long1$chr, pos = fst_combined
 
 fst_combined_long %>%
   sample_frac(1) %>%
+  #filter(chr == 1) %>%
   #filter(fst.outlier.male == TRUE | fst.outlier.female == TRUE) %>%
-  ggplot(aes(x = pos, y = fst, color = fst_class)) +
-  stat_smooth(span = 0.2, n = 100,  se = FALSE)+
-  facet_wrap(~chr)
+  ggplot(aes(x = pos, y = fst, color = fst_outlier)) +
+  geom_point()+
+  #stat_smooth(span = 0.2, n = 100,  se = FALSE)+
+  facet_grid(fst_class~chr)
 
 fst_combined_long %>%
   sample_frac(1) %>%
