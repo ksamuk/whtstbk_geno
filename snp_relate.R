@@ -13,6 +13,7 @@ library(gdsfmt)
 library(SNPRelate)
 library(data.table)
 library(dplyr)
+library(MASS)
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
@@ -40,8 +41,10 @@ genofile <- snpgdsOpen("whtstbk_raw_no_sex.gds")
 
 pca_samples <- sample_id[!grepl("2012", sample_id)]
 
-pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 6, missing.rate = 0.9, maf = 0.05, 
+pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 16, missing.rate = 0.9, maf = 0.05, 
                  sample.id = pca_samples)
+
+parcoord(pca$eigenvect[,1:16], col = pca_df$region)
 
 tab <- data.frame(id = pca$sample.id,
                   EV1 = pca$eigenvect[,1],    # the first eigenvector
