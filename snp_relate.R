@@ -1,14 +1,13 @@
 
 # pacakge installation
 # library(devtools)
-# source("http://bioconductor.org/biocLite.R")
-# biocLite("gdsfmt")
-# biocLite("SNPRelate")
+source("http://bioconductor.org/biocLite.R")
+biocLite("gdsfmt")
+biocLite("SNPRelate")
 # install_github("slowkow/ggrepel")
 
 # libraries
 library(ggplot2)
-library(ggrepel)
 library(gdsfmt)
 library(SNPRelate)
 library(data.table)
@@ -30,6 +29,11 @@ sample_id <- raw_snps$FID
 snp_id <- names(raw_snps[,-c(1:6)])
 
 pos_df <- snp_id %>% fstat_label_to_columns()
+pos_df <- pos_df %>%
+  mutate(chr = gsub("Un", "XXII", chr)) %>%
+  mutate(chr = gsub("chr", "", chr) %>% as.character %>% as.roman %>% as.integer) %>%
+  mutate(pos = pos %>% as.character %>% as.integer)
+      
 
 snpgdsCreateGeno("whtstbk_raw_no_sex.gds", genmat = geno_matrix, 
                  sample.id = sample_id, snpfirstdim = FALSE, 
@@ -39,12 +43,13 @@ genofile <- snpgdsOpen("whtstbk_raw_no_sex.gds")
 
 #snpgdsClose(genofile)
 
-pca_samples <- sample_id[!grepl("2012", sample_id)]
+pca_samples <- sample_id[!grepl("2012|SK36", sample_id)]
 
-pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 16, missing.rate = 0.9, maf = 0.05, 
-                 sample.id = pca_samples)
+snpset <- snpgdsLDpruning(genofile, ld.threshold = 0.2, sample.id = pca_samples, missing.rate = 0.05, maf = 0.05)
 
-parcoord(pca$eigenvect[,1:16], col = pca_df$region)
+snp_id <- snpset %>% unlist
+
+pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 16, bayesian = TRUE, sample.id= pca_samples, snp.id = snp_id)
 
 tab <- data.frame(id = pca$sample.id,
                   EV1 = pca$eigenvect[,1],    # the first eigenvector
@@ -61,21 +66,27 @@ pca_df <- left_join(meta_df, tab)
 
 pca_df %>%
   ggplot(aes(x = EV1, y = EV2, color = region, label = species))+
-  geom_text(size = 4)
+  geom_text(size = 5)
 
+parcoord(pca$eigenvect[,1:16], col = pca_df$region, lty = 1)
 
 
 # extract the loadings for each snps
-pos_df <- snp_id %>% fstat_label_to_columns()
-pca_load <- snpgdsPCASNPLoading(pca, genofile)
-pos_df$load <- pca_load$snploading[1,] 
 
-pos_df <- pos_df %>% 
-  mutate(pos = as.numeric(as.character(pos))) %>%
+load_df <- snp_id %>% as.character %>% fstat_label_to_columns
+pca_load <- snpgdsPCASNPLoading(pca, genofile)
+load_df <- load_df %>%
+  mutate(chr = gsub("Un", "XXII", chr)) %>%
+  mutate(chr = gsub("chr", "", chr) %>% as.character %>% as.roman %>% as.integer) %>%
+  
+load_df$load <- pca_load$snploading[1,] 
+
+load_df <- load_df%>%
+  mutate(pos = as.character(pos) %>% as.numeric) %>%
   arrange(chr, pos)
 
-pos_df %>%
-  ggplot(aes(x = pos, y = load))+
-  geom_point()+
-  geom_smooth()+
+load_df %>%
+  ggplot(aes(x = pos, y = abs(load)))+
+  geom_point(size = 0.5)+
+  #geom_smooth()+
   facet_wrap(~chr)
