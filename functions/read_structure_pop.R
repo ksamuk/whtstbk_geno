@@ -8,7 +8,7 @@ read_structure_pop <- function(str_file_name, meta_df){
   names(df) <- k_cols
   
   # join in str_df (scoped)
-  meta_df <- meta_df %>% filter(pop == pop_name)
+  meta_df <- meta_df %>% filter(pop == pop_name) %>% filter(year==2014)
   df <- data.frame(meta_df, df)
   
   # clean ids

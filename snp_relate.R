@@ -43,13 +43,13 @@ genofile <- snpgdsOpen("whtstbk_raw_no_sex.gds")
 
 #snpgdsClose(genofile)
 
-pca_samples <- sample_id[!grepl("2012|SK36", sample_id)]
+pca_samples <- sample_id[!grepl("SK36", sample_id)]
 
-snpset <- snpgdsLDpruning(genofile, ld.threshold = 0.2, sample.id = pca_samples, missing.rate = 0.05, maf = 0.05)
+snpset <- snpgdsLDpruning(genofile, ld.threshold = 0.1, sample.id = pca_samples, missing.rate = 0.05, maf = 0.05)
 
 snp_id <- snpset %>% unlist
 
-pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 16, bayesian = TRUE, sample.id= pca_samples, snp.id = snp_id)
+pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 16, bayesian = TRUE, sample.id = pca_samples, snp.id = snp_id)
 
 tab <- data.frame(id = pca$sample.id,
                   EV1 = pca$eigenvect[,1],    # the first eigenvector
@@ -61,15 +61,33 @@ head(tab)
 
 #convert ids to match metadata
 tab$id <- tab$id %>% gsub("whtstbk_gbs_|brds_", "", .)
-pca_df <- left_join(meta_df, tab)
+pca_df <- left_join(meta_df, tab) %>%
+  filter(!is.na(EV1))
 
 
 pca_df %>%
-  ggplot(aes(x = EV1, y = EV2, color = region, label = species))+
+  #filter(region == "CB") %>%
+  ggplot(aes(x = EV1, y = EV2, color = region, label = year))+
   geom_text(size = 5)
 
-parcoord(pca$eigenvect[,1:16], col = pca_df$region, lty = 1)
+parcoord(pca$eigenvect[,1:16], col = pca_df$year, lty = 1)
 
+kmeans_df <- pca_df[,8:9] %>%
+  filter(!(is.na(EV1)))
+
+pca_df$cluster <- as.factor(kmeans(kmeans_df , 3, iter.max = 1000, nstart = 100)$cluster)
+
+# force MH5 into the GY cluster
+cluster_labels <- c("cbr", "wht", "cmn")
+pca_df$cluster <- cluster_labels[match(pca_df$cluster, c(1,2,3))]
+pca_df$cluster[pca_df$id =="MH5"] <- "cmn"
+
+pca_df %>%
+  #filter(region == "CB") %>%
+  ggplot(aes(x = EV1, y = EV2, color = as.factor(cluster), label = id))+
+  geom_text(size = 5)
+
+left_join(meta_df, pca_df[,c("id", "cluster")])
 
 # extract the loadings for each snps
 
@@ -77,7 +95,7 @@ load_df <- snp_id %>% as.character %>% fstat_label_to_columns
 pca_load <- snpgdsPCASNPLoading(pca, genofile)
 load_df <- load_df %>%
   mutate(chr = gsub("Un", "XXII", chr)) %>%
-  mutate(chr = gsub("chr", "", chr) %>% as.character %>% as.roman %>% as.integer) %>%
+  mutate(chr = gsub("chr", "", chr) %>% as.character %>% as.roman %>% as.integer)
   
 load_df$load <- pca_load$snploading[1,] 
 

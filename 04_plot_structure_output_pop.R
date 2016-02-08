@@ -10,12 +10,23 @@ list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE,
 
 # plot structure output
 #structure_files <- list.files("data/structure/results_rename", pattern = "simple.[0-9].meanQ",full.names = TRUE)
-structure_files <- list.files("data/structure/results_pop", pattern = "meanQ",full.names = TRUE)
+structure_files <- list.files("data/structure/results_pop", pattern = "logistic.*meanQ",full.names = TRUE)
 
 # read in base metadata file
 meta_df <- read.csv("metadata/mega_meta.csv")
+meta_df <- meta_df %>%
 
-tmp <- read_structure_pop(structure_files[12], meta_df)
+
+build_master_structure_df <- function(k = 2, prior = "simple", meta_df){
+  
+  pattern <- paste0(prior,"_", k, ".*meanQ")
+  
+  structure_files <- list.files("data/structure/results_pop", pattern = pattern ,full.names = TRUE)
+  
+  structure_df <- lapply(structure_files, read_structure_pop, meta_df = meta_df)
+}
+
+tmp <- read_structure_pop(structure_files[32], meta_df)
 
 k1_vals <- str_k2 %>%
   filter(year != 2012) %>%
