@@ -4,11 +4,11 @@ library("dplyr")
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
 
-folder <- "data/treemix/output/noAL_rootCP"
+folder <- "data/treemix/output/wht_cmn_outgroups"
 
 files <- list.files(folder, full.names = TRUE)
 slugs <- strsplit(files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% unique
 
-lapply(slugs, plot_tree)
+lapply(slugs[3], plot_tree)
 
 lapply(slugs, plot_resid)
