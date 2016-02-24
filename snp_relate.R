@@ -7,12 +7,12 @@
 # install_github("slowkow/ggrepel")
 
 # libraries
-library(ggplot2)
-library(gdsfmt)
-library(SNPRelate)
-library(data.table)
-library(dplyr)
-library(MASS)
+library("ggplot2")
+library("gdsfmt")
+library("SNPRelate")
+library("readr")
+library("dplyr")
+library("MASS")
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
@@ -21,8 +21,8 @@ select <- dplyr::select
 meta_df <- read.csv("metadata/mega_meta.csv")
 
 # raw snps (raw ped file)
-raw_snps <- data.frame(fread("data/other_formats/whtstbk_bial_no_sex.raw", stringsAsFactors = FALSE, header = TRUE))
-#raw_snps <- read.table("data/other_formats/whtstbk_master_raw_no_sex.raw", stringsAsFactors = FALSE, header = TRUE)
+#raw_snps <- data.frame(fread("data/snp_tables/whtstbk_all_pruned.gz", stringsAsFactors = FALSE, header = TRUE))
+raw_snps <- read.table("data/snp_tables/whtstbk_all_sex.gz", header = TRUE, stringsAsFactors = FALSE)
 
 # extract genotypes into matrix
 geno_matrix <- data.matrix(raw_snps[,-c(1:6)])
@@ -40,32 +40,27 @@ pos_df <- pos_df %>%
   mutate(pos = pos %>% as.character %>% as.integer)
       
 
-snpgdsCreateGeno("data/snp_relate/whtstbk_raw_no_sex_outgroup.gds", genmat = geno_matrix, 
+snpgdsCreateGeno("data/snp_relate/whtstbk_all_sex.gds", genmat = geno_matrix, 
                  sample.id = sample_id, snpfirstdim = FALSE, 
                  snp.id = snp_id, snp.chromosome = pos_df$chr, snp.position = pos_df$pos)
 # reclaim memory
 rm(list=c("pos_df", "geno_matrix"))
 
 # CAN START HERE
-genofile <- snpgdsOpen("data/snp_relate/whtstbk_raw_no_sex_outgroup.gds")
+genofile <- snpgdsOpen("data/snp_relate/whtstbk_all_sex.gds")
 
 #snpgdsClose(genofile)
 
-pca_samples <- sample_id[!grepl("SK36|2012|LN30|NG", sample_id)]
+pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15", sample_id)]
 
-snpset <- snpgdsLDpruning(genofile, ld.threshold = 0.2, sample.id = pca_samples, 
-                          missing.rate = 0.99, slide.max.n = 10, slide.max.bp = 10000)
 
-snp_id <- snpset %>% unlist
-
-snpgdsCreateGenoSet("data/snp_relate/whtstbk_raw_no_sex_outgroup.gds", "data/snp_relate/whtstbk_pruned.gds", 
-                    snp.id = snp_id, sample.id = pca_samples)
-
-pruned_set <- snpgdsOpen("data/snp_relate/whtstbk_pruned.gds", "data/other")
-snpgdsGDS2PED(pruned_set, format = "1/2")
+diss <- snpgdsDiss(genofile, sample.id = pca_samples)
+clust <- snpgdsHCluster(diss)
+cut_tree <- snpgdsCutTree(clust)
+tmp <- snpgdsDrawTree(clust, shadow.col = 10)
 
 pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 16, 
-                 sample.id = pca_samples, snp.id = snp_id )
+                 sample.id = pca_samples)
 
 tab <- data.frame(id = pca$sample.id,
                   EV1 = pca$eigenvect[,1],    # the first eigenvector
@@ -79,38 +74,48 @@ tab <- data.frame(id = pca$sample.id,
 head(tab)
 
 #convert ids to match metadata
-tab$id <- tab$id %>% gsub("whtstbk_gbs_|brds_", "", .)
+#tab$id <- tab$id %>% gsub("whtstbk_gbs_|brds_", "", .)
 pca_df <- left_join(tab, meta_df) %>%
   filter(!is.na(EV1))
 
+pca_df$id <- pca_df$id %>% gsub("whtstbk_gbs_|brds_", "", .)
 pca_df$id <- pca_df$id %>% gsub("NG-5241_[0-9]*_STD_", "", .)
 
 
 pca_df %>%
+  filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
   #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, color = region, label = id))+
-  geom_text(size = 3)
+  ggplot(aes(x = EV1, y = EV2, color = species, label = id))+
+  #geom_point(size = 2)
+  geom_text(size = 4)
+
+pca_df %>%
+  filter(!(id %in% c("SR20", "LN29", "SR15"))) %>%
+  #filter(region == "CB") %>%
+  ggplot(aes(x = EV5, y = EV3, color = sex, label = id))+
+  geom_point(size = 2)
+#geom_text(size = 4)
 
 parcoord(pca$eigenvect[,1:16], col = grepl("DK", pca_df$pop)+1, lty = 1)
 
-parcoord(pca$eigenvect[,1:16], col = pca_df$year, lty = 1)
+parcoord(pca$eigenvect[,1:16], col = pca_df$sex, lty = 1)
 
 kmeans_df <- pca_df[,2:3] %>%
   filter(!(is.na(EV1)))
 
-pca_df$cluster <- as.factor(kmeans(kmeans_df , 3, iter.max = 1000, nstart = 100)$cluster)
+pca_df$sex<- as.factor(kmeans(kmeans_df , 2, iter.max = 1000, nstart = 100)$cluster)
 
 # force MH5 into the GY cluster
-cluster_labels <- c("cmn", "cbr", "wht")
-pca_df$cluster <- cluster_labels[match(pca_df$cluster, c(1,2,3))]
+cluster_labels <- c("M", "F")
+pca_df$sex <- cluster_labels[match(pca_df$sex, c(1,2))]
 #pca_df$cluster[pca_df$id =="MH5"] <- "cmn"
 
 pca_df %>%
   #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, color = as.factor(cluster), label = id))+
+  ggplot(aes(x = EV1, y = EV2, color = as.factor(sex), label = id))+
   geom_text(size = 5)
 
-meta_df <- left_join(meta_df[,-8], pca_df[,c("id", "cluster")])
+meta_df <- left_join(meta_df[,-5], pca_df[,c("id", "sex")])
 
 write.csv(meta_df, file = "metadata/mega_meta.csv", row.names = FALSE)
 
