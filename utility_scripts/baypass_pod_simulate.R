@@ -145,6 +145,14 @@ simulate.baypass <- function(omega.mat,nsnp=1000,beta.coef=NA,beta.pi=c(1,1),pop
   }
 }
 
+geno2YN<-function(genofile){
+  data=read.table(genofile)
+  npop=ncol(data)/2 ; all1=seq(1,2*npop,2) ; all2=all1+1
+  YY=data[,all1]
+  NN=YY+data[,all2]
+  list(YY=YY,NN=NN)
+}
+
 ###############################################
 ### END FUNCTION
 ##############################################
@@ -158,7 +166,6 @@ slug <- args[1]
 
 #get estimates (post. mean) of both the a_pi and b_pi parameters of
 #the Pi Beta distribution
-paste0(slug, "beta_params")
 beta_file <- list.files(slug, pattern = paste0(slug, "_summary_beta_params"),full.names = TRUE)
 pi_beta_coef <- read.table(beta_file, h = TRUE)$Mean
 

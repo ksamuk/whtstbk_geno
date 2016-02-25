@@ -21,46 +21,23 @@ str_k2 <- read_structure(structure_files[2], structure_ids, meta_df)
 str_k3 <- read_structure(structure_files[3], structure_ids, meta_df)
 str_k4 <- read_structure(structure_files[4], structure_ids, meta_df)
 str_k5 <- read_structure(structure_files[5], structure_ids, meta_df)
-str_k6 <- read_structure(structure_files[6], meta_df)
+#str_k6 <- read_structure(structure_files[6], meta_df)
 
-k1_vals <- str_k2 %>%
-  filter(year != 2012) %>%
-  filter(k == "k1") %>%
-  select(id, q.value) %>%
-  rename(k1_val = q.value )
+# DISTRUCT-esque plots
 
-k3_vals <- str_k4 %>%
-  filter(year != 2012) %>%
-  filter(k == "k3") %>%
-  select(id, q.value) %>%
-  rename(k3_val = q.value )
-
-tmp <- left_join(str_k2, k1_vals)
-tmp <- left_join(tmp, k3_vals)
-
-str_k3 %>%
-  ggplot(aes(x = id, y = q.value, fill = factor(k)))+
-  geom_bar(stat="identity", width = 1)+
-  facet_wrap(cluster~region, scales = "free_x") +
-  theme_classic()+
-  theme(axis.text = element_blank(), 
-        axis.ticks = element_blank(), 
-        axis.line = element_blank(),
-        axis.title = element_blank(),
-        strip.text = element_text(size=12),
-        panel.margin = unit(0.1, "lines"))
-
-# DISTRUCT-esque
+# if facetting, this looks pray good bruh
 str_k3 %>%
   filter(!is.na(cluster)) %>%
   group_by(id) %>%
   mutate(major_k_qval = max(q.value)) %>%
   mutate(major_k = k[q.value == max(q.value)]) %>% 
   ungroup %>%
-  mutate(id = reorder(id, -major_k_qval)) %>%
+  arrange(major_k, major_k_qval) %>%
+  ungroup %>%
+  mutate(id = factor(id, levels = as.character(id))) %>%
   ggplot(aes(x = id, y = q.value, fill = factor(k)))+
   geom_bar(stat = "identity", width = 1)+
-  facet_grid(~major_k, scales = "free_x", switch = "x") +
+  facet_grid(~sex, scales = "free", space = "free", switch = "both") +
   theme_classic()+
   theme(axis.text = element_blank(), 
         axis.ticks = element_blank(), 
@@ -70,22 +47,27 @@ str_k3 %>%
         panel.margin = unit(0.1, "lines"), 
         legend.position = "none", 
         strip.background = element_blank())
-  
 
 
-tmp %>%
-  mutate(id = reorder(id, as.numeric(k3_val))) %>%
+# if k = 2 and NOT facetting, this looks better
+str_k2 %>%
+  filter(!is.na(cluster)) %>%
+  group_by(id) %>%
+  mutate(k1val = q.value[k=="k1"]) %>%
+  ungroup %>%
+  mutate(id = reorder(id, -k1val)) %>%
   ggplot(aes(x = id, y = q.value, fill = factor(k)))+
-  geom_bar(stat="identity", width = 2, color = "black")+
+  geom_bar(stat = "identity", width = 1)+
+  #facet_grid(~major_k, scales = "free_x", switch = "x") +
   theme_classic()+
   theme(axis.text = element_blank(), 
         axis.ticks = element_blank(), 
         axis.line = element_blank(),
         axis.title = element_blank(),
         strip.text = element_text(size=12),
-        panel.margin = unit(0.1, "lines"))+
-  facet_wrap(pop~sex, scales = "free_x")+
-	scale_fill_brewer(palette = "Set1")
+        panel.margin = unit(0.1, "lines"), 
+        legend.position = "none", 
+        strip.background = element_blank())
 
 ## Prepare meta data (as harvested from structure)
 
