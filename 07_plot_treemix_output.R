@@ -18,4 +18,4 @@ pop_order$cluster <- gsub("[^a-z]*", "", pop_order$pop)
 pop_order <- pop_order %>%
   arrange(cluster)
 
-lapply(slugs[3], plot_resid_fixed, pop_order = pop_order$pop)
+lapply(slugs[8], plot_resid_fixed, pop_order = pop_order$pop)
