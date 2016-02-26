@@ -22,7 +22,7 @@ meta_df <- read.csv("metadata/mega_meta.csv")
 
 # raw snps (raw ped file)
 #raw_snps <- data.frame(fread("data/snp_tables/whtstbk_all_pruned.gz", stringsAsFactors = FALSE, header = TRUE))
-raw_snps <- read.table("data/snp_tables/whtstbk_all_sex.gz", header = TRUE, stringsAsFactors = FALSE)
+raw_snps <- read.table("data/snp_tables/whtstbk_2014_pruned.gz", header = TRUE, stringsAsFactors = FALSE)
 
 # extract genotypes into matrix
 geno_matrix <- data.matrix(raw_snps[,-c(1:6)])
@@ -40,27 +40,28 @@ pos_df <- pos_df %>%
   mutate(pos = pos %>% as.character %>% as.integer)
       
 
-snpgdsCreateGeno("data/snp_relate/whtstbk_all_sex.gds", genmat = geno_matrix, 
+snpgdsCreateGeno("data/snp_relate/whtstbk_2014_pruned.gds", genmat = geno_matrix, 
                  sample.id = sample_id, snpfirstdim = FALSE, 
                  snp.id = snp_id, snp.chromosome = pos_df$chr, snp.position = pos_df$pos)
 # reclaim memory
 rm(list=c("pos_df", "geno_matrix"))
 
 # CAN START HERE
-genofile <- snpgdsOpen("data/snp_relate/whtstbk_all_sex.gds")
+genofile_all <- snpgdsOpen("data/snp_relate/whtstbk_all_pruned.gds", allow.duplicate = TRUE)
+genofile_2014 <- snpgdsOpen("data/snp_relate/whtstbk_2014_pruned.gds", allow.duplicate = TRUE)
+
 
 #snpgdsClose(genofile)
 
 pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15", sample_id)]
 
 
-diss <- snpgdsDiss(genofile, sample.id = pca_samples)
+diss <- snpgdsDiss(genofile_all)
 clust <- snpgdsHCluster(diss)
 cut_tree <- snpgdsCutTree(clust)
 tmp <- snpgdsDrawTree(clust, shadow.col = 10)
 
-pca <- snpgdsPCA(genofile, num.thread = 3, eigen.cnt = 16, 
-                 sample.id = pca_samples)
+pca <- snpgdsPCA(genofile_2014, num.thread = 3, eigen.cnt = 16)
 
 tab <- data.frame(id = pca$sample.id,
                   EV1 = pca$eigenvect[,1],    # the first eigenvector
@@ -83,16 +84,17 @@ pca_df$id <- pca_df$id %>% gsub("NG-5241_[0-9]*_STD_", "", .)
 
 
 pca_df %>%
-  filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
+  #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
+  filter(!is.na(cluster)) %>%
   #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, color = species, label = id))+
-  #geom_point(size = 2)
-  geom_text(size = 4)
+  ggplot(aes(x = EV1, y = EV2, color = cluster, label = id))+
+  geom_point(size = 2)
+  #geom_text(size = 4)
 
 pca_df %>%
   filter(!(id %in% c("SR20", "LN29", "SR15"))) %>%
   #filter(region == "CB") %>%
-  ggplot(aes(x = EV5, y = EV3, color = sex, label = id))+
+  ggplot(aes(x = EV1, y = EV2, color = sex, label = id))+
   geom_point(size = 2)
 #geom_text(size = 4)
 

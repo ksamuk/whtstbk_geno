@@ -1,7 +1,9 @@
 
 
-pop1 <- c("AAAT", "AAAT", "AAAT", "AAAT", "AAAT", "AAAA", "AAAA", "AAAA")
-pop2 <- c("AAAA", "AAAA", "AAAA", "AAAA", "AAAA", "AAAA", "AAAA", "AAAT")
+pop1 <- c("AAAT", "AAAT", "AAAT", "AAAT", "AAAA", "AAAA", "AAAA", "AAAA")
+pop2 <- c("AAAT", "AAAT", "AAAT", "AAAT", "AAAA", "AAAA", "AAAA", "AAAA")
+
+pop2 <- c("AAAA", "AAAA", "AAAA", "AAAA", "AAAA", "AAAA", "AAAA", "AAAA")
 
 calc_fst(pop1, pop2)
 calc_dxy(pop1, pop2)

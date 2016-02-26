@@ -38,7 +38,6 @@ xtx_df %>%
 
 #get estimates (post. mean) of both the a_pi and b_pi parameters of
 #the Pi Beta distribution
-paste0(slug, "beta_params")
 beta_file <- list.files("data/baypass/wht_cmn", pattern = paste0(slug, "_summary_beta_params"),full.names = TRUE)
 pi_beta_coef <- read.table(beta_file, h = TRUE)$Mean
 
@@ -49,10 +48,6 @@ geno_data <- geno2YN(geno_file)
 # the covariance matrix
 omega_file <- list.files("data/baypass/wht_cmn", pattern = paste0(slug, "_mat_omega"),full.names = TRUE)
 omega <- as.matrix(read.table(omega_file))
-
-#Create the POD
-simu_wht_cmn <- simulate.baypass(omega.mat = omega, nsnp = 38808, sample.size = geno_data$NN,
-                           beta.pi = pi_beta_coef, pi.maf = 0, suffix = "wht_cmn_pods", prefix = "data/baypass/wht_cmn/")
 
 
 #### RAN POD FILES IN BAYPASS
@@ -87,7 +82,7 @@ pod_xtx_df <- cbind(baypass_sites, pod_xtx_df[,-1])
 #compute the 1% threshold
 pod_thresh <- quantile(pod_xtx_df$m_xtx, probs=0.99)
 
-xtx_df$xtx_outlier <- xtx_df$m_xtx -> pod_thresh
+xtx_df$xtx_outlier <- xtx_df$m_xtx >= pod_thresh
 
 #add the thresh to the actual XtX plot
 xtx_df %>%

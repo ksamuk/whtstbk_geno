@@ -37,7 +37,7 @@ str_k3 %>%
   mutate(id = factor(id, levels = as.character(id))) %>%
   ggplot(aes(x = id, y = q.value, fill = factor(k)))+
   geom_bar(stat = "identity", width = 1)+
-  facet_grid(~sex, scales = "free", space = "free", switch = "both") +
+  facet_grid(~region, scales = "free", space = "free", switch = "both") +
   theme_classic()+
   theme(axis.text = element_blank(), 
         axis.ticks = element_blank(), 

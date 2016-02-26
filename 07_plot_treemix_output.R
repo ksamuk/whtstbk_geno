@@ -4,12 +4,12 @@ library("dplyr")
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
 
-folder <- "data/treemix/output/wht_cmn_outgroups"
+folder <- "data/treemix/wht_cmn_outgroups"
 
 files <- list.files(folder, full.names = TRUE)
 slugs <- strsplit(files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% unique
 
-lapply(slugs[2], plot_tree)
+lapply(slugs[7], plot_tree)
 #text(labels = slugs[1], x = 0.005, y = -1, cex = 0.75)
 
 
@@ -18,4 +18,4 @@ pop_order$cluster <- gsub("[^a-z]*", "", pop_order$pop)
 pop_order <- pop_order %>%
   arrange(cluster)
 
-lapply(slugs[8], plot_resid_fixed, pop_order = pop_order$pop)
+lapply(slugs[2], plot_resid_fixed, pop_order = pop_order$pop)
