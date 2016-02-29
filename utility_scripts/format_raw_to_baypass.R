@@ -28,6 +28,9 @@ meta_df <- read.csv("metadata/mega_meta.csv")
 #raw_file$FID <- gsub("SRX.*", "LC", raw_file$FID)
 raw_file$FID <- gsub("[^A-Z]*", "", raw_file$FID)
 
+# collapse CP pops
+raw_file$FID[raw_file$FID == "CPN"|raw_file$FID == "CPSE"] <- "CP"
+
 # filter out low sample size pops
 pop_counts <- meta_df %>% group_by(pop) %>% tally %>% filter(n > 4)
 meta_df <- meta_df %>% 
@@ -36,12 +39,9 @@ meta_df <- meta_df %>%
 raw_file <- raw_file %>%
   filter(FID %in% pop_counts$pop)
 
-# collapse CP pops
-raw_file$FID[raw_file$FID == "CPN"|raw_file$FID == "CPSE"] <- "CP"
-
 # filter out 2012 data
 raw_file <- raw_file %>% 
-  filter(grepl("2012|\\.2", IID))
+  filter(!grepl("2012|\\.2", IID))
 
 # add in species labels
 pop_suffixes <- left_join(data.frame(id = raw_file$IID), meta_df)
@@ -123,9 +123,9 @@ pop_count <- pop_count %>%
 
 pop_count <- pop_count %>%
   #filter(missing < 2) %>%
-  select(-MH_cbr) %>%
+  #select(-MH_cbr) %>%
   select(-SR_NA) %>%
-  select(-RT_cmn)
+  #select(-RT_cmn)
 
 # convert to baypass format
 
@@ -156,7 +156,7 @@ base_name <- plink_file %>%
   unlist %>% .[3]
 
 out_file_baypass_wht_cmn <- base_name %>%
-  gsub(".gz", ".baypass.wht_cmn.geno", .) %>%
+  gsub(".gz", ".baypass.wht_cmn.2012.geno", .) %>%
   paste0(output_folder, "/", .)
 
 out_file_baypass_wht_cbr <- base_name %>%

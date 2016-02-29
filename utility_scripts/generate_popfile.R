@@ -12,7 +12,7 @@ meta_df <- meta_df %>%
 
 # list of suspect samples
 # suspect = v. high misssing data and/or dissimilarity outliers with respect to samples from same location
-suspect_samples <- c("SK36", "LN30", "SR20", "SR15", "CL64_2", "whtstbk_gbs_2012_brds_WR15", "whtstbk_gbs_2012_brds_SF16", "whtstbk_gbs_2012_brds_PQ11", "whtstbk_gbs_2012_brds_CP22", "whtstbk_gbs_2012_brds_CP8")
+suspect_samples <- c("SK36", "LN30", "SR20", "SR15", "CL64_2", "whtstbk_gbs_2012_brds_WR15", "whtstbk_gbs_2012_brds_SF16", "whtstbk_gbs_2012_brds_PQ11", "whtstbk_gbs_2012_brds_CP22", "whtstbk_gbs_2012_brds_CP8", "whtstbk_gbs_2012_brds_SR15")
 
 # apply filters for popfile
 meta_df <- meta_df %>%
@@ -20,5 +20,11 @@ meta_df <- meta_df %>%
   filter(!(id %in% suspect_samples)) %>%
   filter(!grepl("SRX", id))
 
+meta_df_cluster <- meta_df %>%
+  mutate(pop = paste0(pop, "_", cluster)) %>% 
+  filter(!is.na(cluster))
+
 # write to file
 write.table(meta_df, "metadata/popfile_filtered.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+write.table(meta_df_cluster, "metadata/popfile_filtered_pop_clust.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)

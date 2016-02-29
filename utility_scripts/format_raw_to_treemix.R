@@ -35,15 +35,15 @@ raw_file$FID <- gsub("[^A-Z]*", "", raw_file$FID)
 # filter out low sample size pops
 # * this might be redundant in new workflow *
 
+# collapse CP pops
+raw_file$FID[raw_file$FID == "CPN"|raw_file$FID == "CPSE"] <- "CP"
+
 pop_counts <- meta_df %>% group_by(pop) %>% tally %>% filter(n > 4)
 meta_df <- meta_df %>% 
   filter(pop %in% pop_counts$pop)
 
 raw_file <- raw_file %>%
   filter(FID %in% pop_counts$pop)
-
-# collapse CP pops
-raw_file$FID[raw_file$FID == "CPN"|raw_file$FID == "CPSE"] <- "CP"
 
 # filter out 2012 data
 raw_file <- raw_file %>% 
@@ -131,7 +131,7 @@ pop_count <- pop_count %>%
 
 pop_count <- pop_count %>%
   #filter(missing < 2) %>%
-  select(-MH_cbr) %>%
+  #select(-MH_cbr) %>%
   select(-SR_NA) %>%
   select(-LN_NA) %>%
   select(-RT_cmn)

@@ -1,0 +1,895 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Final Sites</name>
+	<open>1</open>
+	<Style id="sn_ltblu-circle1">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_ltblu-circle4">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_ltblu-circle2">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_blu-circle2">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_wht-circle">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_wht-circle1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_wht-circle</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_ltblu-circle">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ltblu-circle4</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ltblu-circle1</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_blu-circle4">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_blu-circle2</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_blu-circle4</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_ltblu-circle4">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_ltblu-circle1">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_ltblu-circle">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_blu-circle3">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_blu-circle6">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<StyleMap id="m_ylw-pushpin1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#s_ylw-pushpin0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#s_ylw-pushpin_hl2</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sh_blu-circle4">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_wht-circle">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_blu-circle5">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_blu-circle3</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_blu-circle2</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_blu-circle2">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<StyleMap id="m_ylw-pushpin">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#s_ylw-pushpin</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#s_ylw-pushpin_hl</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sh_ltblu-circle0">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<LabelStyle>
+			<scale>1.1</scale>
+		</LabelStyle>
+		<BalloonStyle>
+			<text>$[description]</text>
+		</BalloonStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+		<LineStyle>
+			<color>ffff00ff</color>
+			<width>3</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>70ff00ff</color>
+			<fill>0</fill>
+		</PolyStyle>
+	</Style>
+	<Style id="s_ylw-pushpin_hl2">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_blu-circle3">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_wht-circle0">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_blu-circle1">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_blu-circle">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_wht-circle">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_blu-circle0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_blu-circle5</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_blu-circle7</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="s_ylw-pushpin_hl">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<Style id="sh_wht-circle0">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_blu-circle5">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_ltblu-circle3">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_wht-circle1">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_ltblu-circle3">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ltblu-circle</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ltblu-circle4</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_ltblu-circle2">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ltblu-circle1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ltblu-circle2</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_wht-circle0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_wht-circle0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_wht-circle0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sh_blu-circle7">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/blu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<StyleMap id="msn_ltblu-circle0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ltblu-circle2</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ltblu-circle0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_blu-circle2">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_blu-circle</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_blu-circle3</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_ltblu-circle1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ltblu-circle3</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ltblu-circle</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_blu-circle3">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_blu-circle1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_blu-circle6</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_ltblu-circle">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sh_wht-circle00">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/wht-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="sn_ltblu-circle2">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<BalloonStyle>
+			<text>$[description]</text>
+		</BalloonStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+		<LineStyle>
+			<color>ffff00ff</color>
+			<width>2</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>01ff00ff</color>
+			<fill>0</fill>
+		</PolyStyle>
+	</Style>
+	<Style id="s_ylw-pushpin0">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png</href>
+			</Icon>
+			<hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<ListStyle>
+			<ItemIcon>
+				<href>http://maps.google.com/mapfiles/kml/paddle/ltblu-circle-lv.png</href>
+			</ItemIcon>
+		</ListStyle>
+	</Style>
+	<Style id="s_ylw-pushpin">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+	</Style>
+	<StyleMap id="msn_wht-circle1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_wht-circle</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_wht-circle00</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Placemark>
+		<name>Porper&apos;s Pond</name>
+		<LookAt>
+			<longitude>-61.3108483057521</longitude>
+			<latitude>45.43531825371554</latitude>
+			<altitude>0</altitude>
+			<heading>-4.731887269256595</heading>
+			<tilt>15.22672353809383</tilt>
+			<range>5323.447438536601</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_wht-circle</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-61.32595769705129,45.4371909998258,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Captain&apos;s Pond</name>
+		<LookAt>
+			<longitude>-61.78957908074494</longitude>
+			<latitude>45.55763555901166</latitude>
+			<altitude>0</altitude>
+			<heading>0.6366640143021181</heading>
+			<tilt>0</tilt>
+			<range>90247.84221273546</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_ltblu-circle</styleUrl>
+		<Point>
+			<coordinates>-61.86122858545528,45.67188510778842,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Pomquet</name>
+		<LookAt>
+			<longitude>-61.83362798423753</longitude>
+			<latitude>45.62423057121361</latitude>
+			<altitude>0</altitude>
+			<heading>0.0908115392888799</heading>
+			<tilt>0</tilt>
+			<range>3775.088532217446</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_blu-circle2</styleUrl>
+		<Point>
+			<coordinates>-61.8448146413926,45.62684013006972,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Antigonish Landing</name>
+		<LookAt>
+			<longitude>-61.9606944795557</longitude>
+			<latitude>45.62602907321359</latitude>
+			<altitude>0</altitude>
+			<heading>0.00178556773085202</heading>
+			<tilt>0</tilt>
+			<range>2429.763021018815</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_ltblu-circle2</styleUrl>
+		<Point>
+			<coordinates>-61.96000230261708,45.63196698892293,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Rights River</name>
+		<LookAt>
+			<longitude>-61.96928890817367</longitude>
+			<latitude>45.62735846049368</latitude>
+			<altitude>0</altitude>
+			<heading>-0.004356973848225586</heading>
+			<tilt>0</tilt>
+			<range>1279.55973048629</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_blu-circle3</styleUrl>
+		<Point>
+			<coordinates>-61.96877548990069,45.62720792390851,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Portage Road Bridge</name>
+		<LookAt>
+			<longitude>-61.06021699436153</longitude>
+			<latitude>45.93617061028111</latitude>
+			<altitude>0</altitude>
+			<heading>26.71951638273431</heading>
+			<tilt>11.36507601667354</tilt>
+			<range>1836.051876364327</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#m_ylw-pushpin1</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-61.05983450032719,45.93693188624178,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Canal Lake</name>
+		<LookAt>
+			<longitude>-63.90371899368318</longitude>
+			<latitude>44.49407106606743</latitude>
+			<altitude>0</altitude>
+			<heading>17.76094211262617</heading>
+			<tilt>13.27486455740881</tilt>
+			<range>2722.389129445034</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_wht-circle1</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-63.90343600860849,44.49852424910718,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Milford Haven Collection</name>
+		<Camera>
+			<longitude>-61.60215112383198</longitude>
+			<latitude>45.44060349489461</latitude>
+			<altitude>5464.111501014811</altitude>
+			<heading>12.964557190242</heading>
+			<tilt>15.63953543892561</tilt>
+			<roll>-0.7716572455508419</roll>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</Camera>
+		<styleUrl>#msn_wht-circle1</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-61.61208761432853,45.45772194296207,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>West Sheet Harbour Pond</name>
+		<LookAt>
+			<longitude>-62.53851854697353</longitude>
+			<latitude>44.91910973934558</latitude>
+			<altitude>0</altitude>
+			<heading>12.26303729148709</heading>
+			<tilt>30.01065891484767</tilt>
+			<range>2632.470370493086</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_blu-circle0</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-62.54379311437977,44.91992287501927,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Black River</name>
+		<LookAt>
+			<longitude>-61.09382194198556</longitude>
+			<latitude>45.69755622437626</latitude>
+			<altitude>0</altitude>
+			<heading>13.24374812677186</heading>
+			<tilt>13.34533324678327</tilt>
+			<range>2354.085647102643</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_blu-circle0</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-61.09382194198557,45.69755622437627,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Gillis Cove</name>
+		<LookAt>
+			<longitude>-61.05199495046306</longitude>
+			<latitude>45.91195844953742</latitude>
+			<altitude>0</altitude>
+			<heading>5.662451316414735</heading>
+			<tilt>13.56249768340348</tilt>
+			<range>2196.275149614639</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_ltblu-circle1</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-61.05451495999489,45.91452210750921,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>River Tillard</name>
+		<LookAt>
+			<longitude>-60.90923644774711</longitude>
+			<latitude>45.65800253808025</latitude>
+			<altitude>0</altitude>
+			<heading>13.42304709739966</heading>
+			<tilt>28.51441891523014</tilt>
+			<range>3028.703690655751</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_wht-circle0</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-60.91313099692606,45.6570513854122,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Skye River</name>
+		<LookAt>
+			<longitude>-61.11256129418874</longitude>
+			<latitude>45.97018250871111</latitude>
+			<altitude>0</altitude>
+			<heading>0.2204299587680484</heading>
+			<tilt>26.84276442669394</tilt>
+			<range>2518.469382951698</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_blu-circle4</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-61.11930230636083,45.97041686554427,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Little Narrows</name>
+		<LookAt>
+			<longitude>-60.97845055579683</longitude>
+			<latitude>45.99024404820484</latitude>
+			<altitude>0</altitude>
+			<heading>0.5142527725815904</heading>
+			<tilt>9.928310821529978</tilt>
+			<range>3868.211723852956</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_ltblu-circle3</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-60.98498461757813,45.99215908953635,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Middle River West</name>
+		<LookAt>
+			<longitude>-60.90392337647711</longitude>
+			<latitude>46.08206078249322</latitude>
+			<altitude>0</altitude>
+			<heading>0.3663185921093675</heading>
+			<tilt>29.63649630342688</tilt>
+			<range>2626.083297339387</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_blu-circle5</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-60.91029525636932,46.08322287505374,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>Salmon River Estuary</name>
+		<Snippet maxLines="0"></Snippet>
+		<LookAt>
+			<longitude>-61.4725763323529</longitude>
+			<latitude>45.35417394657865</latitude>
+			<altitude>0</altitude>
+			<heading>0.3505041697181988</heading>
+			<tilt>0</tilt>
+			<range>3157.001214515253</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#msn_ltblu-circle0</styleUrl>
+		<ExtendedData>
+		</ExtendedData>
+		<Point>
+			<coordinates>-61.47283403397984,45.35265731963511,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>St. Francis Harbour</name>
+		<Camera>
+			<longitude>-61.30573927332586</longitude>
+			<latitude>45.44030032205349</latitude>
+			<altitude>3180.058064174977</altitude>
+			<heading>-4.555195964887409</heading>
+			<tilt>11.22390793652576</tilt>
+			<roll>0.6272907630711506</roll>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</Camera>
+		<styleUrl>#msn_wht-circle</styleUrl>
+		<Point>
+			<coordinates>-61.30894900006923,45.44588567525954,0</coordinates>
+		</Point>
+	</Placemark>
+	<Placemark>
+		<name>New Harbour River</name>
+		<LookAt>
+			<longitude>-61.45700280563758</longitude>
+			<latitude>45.18015366417307</latitude>
+			<altitude>0</altitude>
+			<heading>-4.875695444629993</heading>
+			<tilt>17.00806345454252</tilt>
+			<range>1046.003487996706</range>
+			<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+		</LookAt>
+		<styleUrl>#m_ylw-pushpin</styleUrl>
+		<Point>
+			<gx:drawOrder>1</gx:drawOrder>
+			<coordinates>-61.45905869862039,45.18120379348552,0</coordinates>
+		</Point>
+	</Placemark>
+</Document>
+</kml>

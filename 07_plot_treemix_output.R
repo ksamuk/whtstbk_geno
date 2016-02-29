@@ -9,7 +9,7 @@ folder <- "data/treemix/wht_cmn_outgroups"
 files <- list.files(folder, full.names = TRUE)
 slugs <- strsplit(files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% unique
 
-lapply(slugs[7], plot_tree)
+lapply(slugs[1], plot_tree)
 #text(labels = slugs[1], x = 0.005, y = -1, cex = 0.75)
 
 
