@@ -17,19 +17,21 @@ list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE,
 ################################################################################
 
 # the raw "stats" files
-stats_files <- list.files("data/stats", pattern = ".txt", full.names = TRUE)
+stats_folder <- "data/stats/2014"
+stats_files <- list.files(stats_folder, pattern = ".txt", full.names = TRUE)
 
 # names of the populations (cbr, wht, etc.)
 pop_names <- c("cbr", "wht", "cmn")
 
 build_stats_df <- function(pop_name, stats_files){
   
-  stats_files_pop <- stats_files[grep(pop_name, stats_files)] 
+  stats_files_pop <- stats_files[grep(paste0(stats_folder,"/",pop_name), stats_files)] 
   stats_files_pop <- stats_files_pop[grep("chr", stats_files_pop, invert = TRUE)] 
+  stats_files_pop <- stats_files_pop[grep("r2", stats_files_pop, invert = TRUE)] 
   
   stats_dfs <- lapply(stats_files_pop, function(x) read.table(x, header = TRUE, stringsAsFactors = FALSE))
   names(stats_dfs) <- strsplit(stats_files_pop, "/") %>% 
-    lapply(function(x)x[[3]]) %>% 
+    lapply(function(x)x[[4]]) %>% 
     unlist %>% 
     gsub(".txt", "", .)
   
@@ -73,16 +75,11 @@ stats_long$stat <- gsub("_[a-z]{3}$", "", stats_long$stat)
 build_ld_df <- function(pop_name, stats_files, window = FALSE){
   
   # determine files
-  stats_files_pop <- stats_files[grep(pop_name, stats_files)] 
-  stats_files_pop <- stats_files_pop[grep("chr", stats_files_pop)] 
+  stats_files_pop <- stats_files[grep(paste0(stats_folder,"/",pop_name), stats_files)]  
+  stats_files_pop <- stats_files_pop[grep("r2", stats_files_pop)] 
   
   # read into a list df
-  stats_dfs <- lapply(stats_files_pop, function(x) read.table(x, header = TRUE, stringsAsFactors = FALSE))
-  
-  # rename list items to chromosomes
-  names(stats_dfs) <- strsplit(stats_files_pop, "_") %>% 
-    lapply(function(x)x[[2]]) %>% 
-    unlist
+  stats_dfs <- read.table(stats_files_pop[1], header = TRUE, stringsAsFactors = FALSE)
   
   # the magic: calculate site-wise ld (r2)
   # requires >3 pairwise r2's, each with >30 genotypes 
@@ -94,8 +91,7 @@ build_ld_df <- function(pop_name, stats_files, window = FALSE){
     filter(n_sites > 3) %>%
     ungroup
   
-  ld_df <- lapply(stats_dfs, calc_sitewise_ld) %>% 
-    rbind_all() 
+  ld_df <- calc_sitewise_ld(stats_dfs)
   
   if (window == TRUE){
     ld_df$w_pos2 <- (((ld_df$POS1 / 50000) %>% floor) + 1)*50000
@@ -162,6 +158,9 @@ fst_df <- left_join(fst_df, cbr_cmn_fst)
 stat_df <- left_join(ld_df, stats_df)
 stat_df <- left_join(stat_df, fst_df)
 
+write.table(stat_df, "data/stats/stats_df_2014_master.txt", row.names = FALSE, quote=FALSE)
+stat_df <- read.table("data/stats/stats_df_2014_master.txt", header = TRUE, stringsAsFactors = FALSE)
+
 # joint outlier score
 
 wht_cbr_outlier <- stat_df$fst_wht_cbr %>% is.outlier
@@ -186,7 +185,7 @@ stat_long <- gather(stat_df, key = stat, value = value, -chr, -pos1, -pos2)
 
 stat_df %>%
   filter(chr == "chrI") %>%
-  ggplot(aes(x = pos1, y = wht_cmn_fst %>% scale, color = "fst"))+
+  ggplot(aes(x = as.numeric(pos1), y = wht_cmn_fst %>% scale, color = "fst"))+
   geom_smooth(se = FALSE)+
   geom_smooth(aes(y = wht_cbr_fst %>% scale, color = "fst"), se = FALSE)+
   geom_smooth(aes(y = r2_wht %>% scale, color = "wht_r2"), se = FALSE)+

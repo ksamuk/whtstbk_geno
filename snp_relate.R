@@ -56,12 +56,27 @@ genofile_2014 <- snpgdsOpen("data/snp_relate/whtstbk_2014_pruned.gds", allow.dup
 pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15", sample_id)]
 
 
-diss <- snpgdsDiss(genofile_all)
+diss <- snpgdsDiss(genofile_2014)
 clust <- snpgdsHCluster(diss)
 cut_tree <- snpgdsCutTree(clust)
 tmp <- snpgdsDrawTree(clust, shadow.col = 10)
 
 pca <- snpgdsPCA(genofile_2014, num.thread = 3, eigen.cnt = 16)
+
+
+pca_load <- snpgdsPCASNPLoading(pca, genofile_2014, num.thread = 3)
+
+load_df <- data.frame(snp = pca_load$snp.id, load_ev1 = t(pca_load$snploading)[,1], load_ev2 = t(pca_load$snploading)[,2])
+
+load_df$chr <- load_df$snp %>% gsub("\\..*|chr", "",. ) %>% 
+  gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
+  
+load_df$pos <- load_df$snp %>% gsub("chr.*\\.|_[A-Z]*", "",. ) %>% as.numeric
+
+load_df <- load_df %>%
+  dplyr::select(chr, pos, load_ev1, load_ev2)
+
+write.table(load_df, "data/stats/whtstbk_2014_pca_loadings.txt", row.names= FALSE, quote = FALSE)
 
 tab <- data.frame(id = pca$sample.id,
                   EV1 = pca$eigenvect[,1],    # the first eigenvector

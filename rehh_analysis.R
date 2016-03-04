@@ -30,7 +30,7 @@ create_rehh_ehh_file <- function(chr, meta_df, haps_dir = "data/phased"){
   
   #Map file contains SNPs information in five columns SNP names, chromosome, position,
   #ancestral and derived allele.
-  
+  cat(paste0(chr,"..."))
   cat("Formatting phased hap files...")
   
   #make the map file
@@ -85,44 +85,47 @@ create_rehh_ehh_file <- function(chr, meta_df, haps_dir = "data/phased"){
   cat ("Performing hh scans...")
   
   hh_scans <- list()
+  hh_scans_rsb <- list()
   
   for (j in 1:3){
     
     i <- c("wht", "cmn", "cbr")[j]
     hap.in <- data2haplohh(hap_file = paste0("data/rehh/",i,"_hap/chr", chr, ".",i,".hap"), map_file = paste0("data/rehh/map/chr", chr, ".map"))
     hh_scans[[j]] <- scan_hh(hap.in)
+    hh_scans_rsb[[j]] <- hh_scans[[j]]
+    hh_scans[[j]] <- hh_scans[[j]]%>% data.frame %>%
+      dplyr::select(CHR, POSITION, IES)
+    
+    names(hh_scans[[j]]) <- c("chr", "pos", paste0("ies_", i))
     #save(ehh.scan, file = paste0("data/rehh/ehh_scans/chr",chr,".ehh.",i,".Rdata")
     
   }
   
+  ies_df <- left_join(hh_scans[[1]], hh_scans[[2]]) %>% left_join(hh_scans[[3]])
+  
+  write.table(ies_df, paste0("data/rehh/ehh_scans/chr",chr,".txt"), row.names = FALSE, quote = FALSE)
+  
+  hh_scans <- hh_scans_rsb
+  
   cat ("Performing Rsb scans...")
   
   wht_cmn_rsb <- ies2rsb(hh_scans[[1]], hh_scans[[2]], popname1 = "wht", popname2 = "cmn", method="bilateral") %>% data.frame
-  names(wht_cmn_rsb) <- c("chr", "pos", "rsb", "Pvalue (bilateral)")
+  names(wht_cmn_rsb) <- c("chr", "pos", "rsb_wht_cmn", "rsb_pval_wht_cmn")
   
   wht_cbr_rsb <- ies2rsb(hh_scans[[1]], hh_scans[[3]], popname1 = "wht", popname2 = "cbr", method="bilateral") %>% data.frame
-  names(wht_cbr_rsb) <- c("chr", "pos", "rsb", "Pvalue (bilateral)")
+  names(wht_cbr_rsb) <- c("chr", "pos", "rsb_wht_cbr", "rsb_pval_wht_cbr")
   
   cbr_cmn_rsb <- ies2rsb(hh_scans[[3]], hh_scans[[2]], popname1 = "cbr", popname2 = "cmn", method="bilateral") %>% data.frame
-  names(cbr_cmn_rsb) <- c("chr", "pos", "rsb", "Pvalue (bilateral)")
+  names(cbr_cmn_rsb) <- c("chr", "pos", "rsb_cmn_cbr", "rsb_pval_cmn_cbr")
   
-  plot(wht_cmn_rsb[,2], wht_cmn_rsb[,3], col = (wht_cmn_rsb[,4] > 2) +1)
+  rsb_df <- left_join(wht_cmn_rsb, wht_cbr_rsb, by = c("chr", "pos")) %>% left_join(cbr_cmn_rsb, by = c("chr", "pos"))
+  head(rsb_df)
   
-  wht_cmn_rsb %>%
-    filter(`Pvalue (bilateral)` < -3 | `Pvalue (bilateral)` > 3)
+  write.table(rsb_df, paste0("data/rehh/rsb_scans/chr",chr,".txt"), row.names = FALSE, quote = FALSE)
   
-  which(wht_cmn_rsb$pos == 12850192)
-  
-  rsbplot(wht_cmn_rsb)
-  
-  res.ehh<-calc_ehh(hap.in ,mrk = 787)
-  
-  bifurcation.diagram(hap.in, mrk_foc = 1461, all_foc = 1, nmrk_l = 5, nmrk_r = 100,
-                      main="")
-  
-  
-  
+
 }
+
 
 ################################################################################
 # Release the hounds!
@@ -130,9 +133,20 @@ create_rehh_ehh_file <- function(chr, meta_df, haps_dir = "data/phased"){
 
 chr_set <- as.roman(rep(1:21)) %>% as.character
 
-# does this work?
+# calc ehh and rsb for all the things
 lapply(chr_set, create_rehh_ehh_file, meta_df = meta_df)
 
+# create master ehh and rsb files
+
+ehh.files <- list.files("data/rehh/ehh_scans", full.names = TRUE)
+ehh_df <- lapply(ehh.files, read.table, header = TRUE)
+ehh_df <- bind_rows(ehh_df)
+write.table(ehh_df, "data/stats/whtstbk_ies_df.txt", quote = FALSE, row.names = FALSE)
+
+rsb.files <- list.files("data/rehh/rsb_scans", full.names = TRUE)
+rsb_df <- lapply(rsb.files, read.table, header = TRUE)
+rsb_df <- bind_rows(rsb_df)
+write.table(rsb_df , "data/stats/whtstbk_rsb_df.txt", quote = FALSE, row.names = FALSE)
 
 #load(file = "data/rehh/test.ehh.scan.Rdata")
 test.ihs <- ihh2ihs(test.ehh.scan, freqbin=0.025)
@@ -155,3 +169,17 @@ bifurcation.diagram(test.in, mrk_foc = 680, all_foc = 1, nmrk_l = 2, nmrk_r = 50
 
 
 ies2rsb(hh_pop1, hh_pop2, popname1=NA,popname2=NA,method="bilateral")
+
+plot(wht_cmn_rsb[,2], wht_cmn_rsb[,3], col = (wht_cmn_rsb[,4] > 2) +1)
+
+wht_cmn_rsb %>%
+  filter(`Pvalue (bilateral)` < -3 | `Pvalue (bilateral)` > 3)
+
+which(wht_cmn_rsb$pos == 12850192)
+
+rsbplot(wht_cmn_rsb)
+
+res.ehh<-calc_ehh(hap.in ,mrk = 787)
+
+bifurcation.diagram(hap.in, mrk_foc = 1461, all_foc = 1, nmrk_l = 5, nmrk_r = 100,
+                    main="")

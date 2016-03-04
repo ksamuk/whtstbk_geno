@@ -2,7 +2,7 @@
 
 # libraries
 
-install.packages("qqman")
+#install.packages("qqman")
 library("qqman")
 library("dplyr")
 library("ggplot2")
@@ -29,13 +29,13 @@ wht_cbr_fst$fst[wht_cbr_fst$fst < 0] <- 0
 
 fst_df <- full_join(wht_cmn_fst, wht_cbr_fst, by = c("chr", "pos"))
 fst_df <- full_join(fst_df, cbr_cmn_fst, by = c("chr", "pos"))
-names(fst_df)[3:5] <- c("wht_cmn", "wht_cbr", "cbr_cmn")
+names(fst_df)[3:5] <- c("fst_wht_cmn", "fst_wht_cbr", "fst_cbr_cmn")
 fst_df$chr <- fst_df$chr %>% gsub("chr", "", .) %>% gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
 
 
 #### READ IN XTX FILES FROM BAYPASS
 
-slugs <- c("wht_cmn", "wht_cbr", "cmn_cbr")
+slugs <- c("wht_cmn", "wht_cbr", "cmn_cbr", "wht_cmn.2012")
 
 read_xtx_file <- function(slug){
   
@@ -46,8 +46,21 @@ read_xtx_file <- function(slug){
   xtx_df <- read.table(xtx_file, header = TRUE, stringsAsFactors = FALSE)
   names(xtx_df) <- tolower(names(xtx_df)) 
   xtx_df <- cbind(baypass_sites, xtx_df[,-1])
+  
+  pod_xtx_file <- list.files(paste0("data/baypass/",slug), pattern = paste0(slug, "_pods_summary_pi_xtx"),full.names = TRUE)
+  pod_xtx_df <- read.table(xtx_file, header = TRUE, stringsAsFactors = FALSE)
+  names(pod_xtx_df) <- tolower(names(pod_xtx_df)) 
+  pod_xtx_df <- cbind(baypass_sites, pod_xtx_df[,-1])
+  
+  #compute the 1% threshold
+  pod_thresh <- quantile(pod_xtx_df$m_xtx, probs=0.99)
+  
+  xtx_df$outlier_xtx <- xtx_df$m_xtx >= pod_thresh
+  
   names(xtx_df)[7] <- paste0("xtx_", slug)
-  xtx_df[,c(1:2, 7)]
+  names(xtx_df)[9] <- paste0("outlier_xtx_", slug)
+  xtx_df <- xtx_df[,c(1:2, 7, 9)]
+  xtx_df
 }
 
 xtx_list <- lapply(slugs, read_xtx_file)
@@ -55,43 +68,62 @@ xtx_list <- lapply(slugs, read_xtx_file)
 xtx_df <- Reduce(function(x, y) merge(x, y, all=TRUE), xtx_list) %>%
   arrange(chr, pos)
 
-#### Merge 
+#### Reading RSB / EHH files
+
+rsb_df <- read.table("data/stats/whtstbk_rsb_df.txt", header = TRUE)
+ies_df <- read.table("data/stats/whtstbk_ies_df.txt", header = TRUE)
 
 ####
 
-# join xtx files?
-fx_df <- full_join(fst_df, xtx_df)
+#### Reading PCA loading file
 
-wht_cmn_outlier <- is.outlier(fx_df$wht_cmn, cutoff = 0.99)
-wht_cbr_outlier <- is.outlier(fx_df$wht_cbr, cutoff = 0.99)
-cbr_cmn_outlier <- is.outlier(fx_df$cbr_cmn, cutoff = 0.99)
+pca_df <- read.table("data/stats/whtstbk_2014_pca_loadings.txt", header = TRUE)
 
-fx_df$wht_outlier <- (wht_cmn_outlier & wht_cbr_outlier) & !(cbr_cmn_outlier)
+####
 
-fst_long <- gather(fx_df, key = div_stat, value = value, -chr, -pos, -wht_outlier)
+# join all per locus files
+fx_df <- full_join(fst_df, xtx_df) %>% full_join(rsb_df) %>% full_join(ies_df) %>% full_join(pca_df)
+write.table(fx_df, "data/stats/snp_stats_master.txt", row.names = FALSE, quote = FALSE)
 
-fx_df %>%
-  filter(wht_outlier == T)
+outlier_wht_cmn <- is.outlier(fx_df$fst_wht_cmn, cutoff = 0.99)
+outlier_wht_cbr <- is.outlier(fx_df$fst_wht_cbr, cutoff = 0.99)
+outlier_cbr_cmn <- is.outlier(fx_df$fst_cbr_cmn, cutoff = 0.99)
+
+fx_df$outlier_fst_joint <- (outlier_wht_cmn | outlier_wht_cbr) & !(outlier_cbr_cmn)
+fx_df$outlier_xtx_joint <- with(fx_df, (outlier_xtx_wht_cbr | outlier_xtx_wht_cmn) & !(outlier_xtx_cmn_cbr))
+
+fst_long <- gather(fx_df, key = stat, value = value, -chr, -pos, -outlier_fst_joint, -outlier_xtx_joint)
+
 
 fx_df %>%
   #sample_frac(0.01)%>%
-  ggplot(aes(x = cbr_cmn, y = xtx_cmn_cbr)) +
+  filter(chr == 18) %>%
+  ggplot(aes(x = pos, y = ies_wht, color = "ies_wht")) +
   geom_point(size = 1)+
-  facet_grid(fst_type~chr, scales = "free", space = "free_x", switch = "x") +
-  theme_classic()+
-  theme(axis.text.x = element_blank(), 
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank(),
-        panel.margin = unit(0.1, "cm"),
-        strip.background = element_blank())
+  geom_point(aes(y = -1*ies_cmn, color = "ies_cmn"), size = 1)+
+  geom_smooth(aes(y = rsb_wht_cmn*100000, color = "rsb"))+
+  #facet_grid(fst_type~chr, scales = "free", space = "free_x", switch = "x") +
+  theme_classic()
+
+fx_df %>%
+  #sample_frac(0.01)%>%
+  #filter(chr == 5) %>%
+  ggplot(aes(x = rsb_wht_cmn, y = fst_wht_cmn)) +
+  geom_point(size = 1)+
+  #facet_grid(fst_type~chr, scales = "free", space = "free_x", switch = "x") +
+  theme_classic()
+
 
 fst_long %>%
-  filter(div_stat %in% c("wht_cmn", "wht_cbr", "cbr_cmn")) %>%
-  #filter(chr %in% c(1,4,7)) %>%
+  #filter(div_stat %in% c("wht_cmn", "wht_cbr", "cbr_cmn")) %>%
+  #filter(chr %in% c(7)) %>%
+  filter(!(grepl("outlier", stat))) %>% 
+  filter(!(grepl("pval", stat))) %>% 
+  filter((grepl("fst|rsb", stat))) %>%
   #sample_frac(0.01) %>%
-  ggplot(aes(x = pos, y = value, color = wht_outlier)) +
+  ggplot(aes(x = pos, y = value, color = outlier_xtx_joint)) +
   geom_point(size = 1)+
-  facet_grid(div_stat~chr, scales = "free", space = "free_x", switch = "x") +
+  facet_grid(stat~chr, scales = "free", space = "free_x", switch = "x") +
   theme_classic()+
   theme(axis.text.x = element_blank(), 
         axis.ticks.x = element_blank(),
