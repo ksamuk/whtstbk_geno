@@ -68,10 +68,11 @@ xtx_list <- lapply(slugs, read_xtx_file)
 xtx_df <- Reduce(function(x, y) merge(x, y, all=TRUE), xtx_list) %>%
   arrange(chr, pos)
 
-#### Reading RSB / EHH files
+#### Reading RSB / EHH / iHS files
 
 rsb_df <- read.table("data/stats/whtstbk_rsb_df.txt", header = TRUE)
 ies_df <- read.table("data/stats/whtstbk_ies_df.txt", header = TRUE)
+ihs_df <- read.table("data/stats/whtstbk_ihs_df.txt", header = TRUE)
 
 ####
 
@@ -82,7 +83,8 @@ pca_df <- read.table("data/stats/whtstbk_2014_pca_loadings.txt", header = TRUE)
 ####
 
 # join all per locus files
-fx_df <- full_join(fst_df, xtx_df) %>% full_join(rsb_df) %>% full_join(ies_df) %>% full_join(pca_df)
+fx_df <- full_join(fst_df, xtx_df) %>% full_join(rsb_df) %>% 
+  full_join(ies_df) %>% full_join(ihs_df) %>% full_join(pca_df)
 write.table(fx_df, "data/stats/snp_stats_master.txt", row.names = FALSE, quote = FALSE)
 
 outlier_wht_cmn <- is.outlier(fx_df$fst_wht_cmn, cutoff = 0.99)
@@ -91,24 +93,27 @@ outlier_cbr_cmn <- is.outlier(fx_df$fst_cbr_cmn, cutoff = 0.99)
 
 fx_df$outlier_fst_joint <- (outlier_wht_cmn | outlier_wht_cbr) & !(outlier_cbr_cmn)
 fx_df$outlier_xtx_joint <- with(fx_df, (outlier_xtx_wht_cbr | outlier_xtx_wht_cmn) & !(outlier_xtx_cmn_cbr))
+fx_df$delta_ihs_wht_cmn <-fx_df$ihs_wht - fx_df$ihs_cmn
+fx_df$delta_ihs_wht_cbr <-fx_df$ihs_wht - fx_df$ihs_cbr
+fx_df$delta_ihs_cbr_cmn <-fx_df$ihs_cbr - fx_df$ihs_cmn
 
 fst_long <- gather(fx_df, key = stat, value = value, -chr, -pos, -outlier_fst_joint, -outlier_xtx_joint)
 
 
 fx_df %>%
   #sample_frac(0.01)%>%
-  filter(chr == 18) %>%
-  ggplot(aes(x = pos, y = ies_wht, color = "ies_wht")) +
-  geom_point(size = 1)+
-  geom_point(aes(y = -1*ies_cmn, color = "ies_cmn"), size = 1)+
-  geom_smooth(aes(y = rsb_wht_cmn*100000, color = "rsb"))+
+  #filter(chr == 6) %>%
+  ggplot(aes(x = outlier_xtx_joint, y = ihs_wht)) +
+  geom_boxplot()+
+  #geom_point(aes(y = -1*ihs_wht, color = "ihs_cmn"), size = 1)+
+  #geom_line(aes(y = rsb_wht_cmn, color = "rsb"))+
   #facet_grid(fst_type~chr, scales = "free", space = "free_x", switch = "x") +
   theme_classic()
 
 fx_df %>%
   #sample_frac(0.01)%>%
   #filter(chr == 5) %>%
-  ggplot(aes(x = rsb_wht_cmn, y = fst_wht_cmn)) +
+  ggplot(aes(x = ies_cbr, y = ies_cmn)) +
   geom_point(size = 1)+
   #facet_grid(fst_type~chr, scales = "free", space = "free_x", switch = "x") +
   theme_classic()
@@ -116,14 +121,28 @@ fx_df %>%
 
 fst_long %>%
   #filter(div_stat %in% c("wht_cmn", "wht_cbr", "cbr_cmn")) %>%
-  #filter(chr %in% c(7)) %>%
+  filter(chr %in% c(5)) %>%
   filter(!(grepl("outlier", stat))) %>% 
   filter(!(grepl("pval", stat))) %>% 
-  filter((grepl("fst|rsb", stat))) %>%
+  filter((grepl("fst|rsb|delta", stat))) %>%
   #sample_frac(0.01) %>%
   ggplot(aes(x = pos, y = value, color = outlier_xtx_joint)) +
   geom_point(size = 1)+
-  facet_grid(stat~chr, scales = "free", space = "free_x", switch = "x") +
+  facet_grid(stat~., scales = "free", space = "free_x", switch = "x") +
+  theme_classic()+
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank(),
+        panel.margin = unit(0.1, "cm"),
+        strip.background = element_blank())+
+  scale_color_manual(values=c("black", "red"))
+
+
+fst_long %>%
+  #filter(div_stat %in% c("wht_cmn", "wht_cbr", "cbr_cmn")) %>%
+  ggplot(aes(x = outlier_xtx_joint, y = value, color = outlier_xtx_joint)) +
+  geom_jitter(size = 1)+
+  facet_wrap(~stat, scales = "free") +
   theme_classic()+
   theme(axis.text.x = element_blank(), 
         axis.ticks.x = element_blank(),
