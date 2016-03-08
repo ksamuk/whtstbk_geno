@@ -85,13 +85,16 @@ create_rehh_ehh_file <- function(chr, meta_df, haps_dir = "data/phased"){
   cat ("Performing hh scans...")
   
   hh_scans <- list()
+  ihs_scans <- list()
   hh_scans_rsb <- list()
   
   for (j in 1:3){
     
     i <- c("wht", "cmn", "cbr")[j]
     hap.in <- data2haplohh(hap_file = paste0("data/rehh/",i,"_hap/chr", chr, ".",i,".hap"), map_file = paste0("data/rehh/map/chr", chr, ".map"))
+    
     hh_scans[[j]] <- scan_hh(hap.in)
+    ihs_scans[[j]] <- ihh2ihs(hh_scans[[j]])$res.ihs 
     hh_scans_rsb[[j]] <- hh_scans[[j]]
     hh_scans[[j]] <- hh_scans[[j]]%>% data.frame %>%
       dplyr::select(CHR, POSITION, IES)
