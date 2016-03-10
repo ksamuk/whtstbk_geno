@@ -230,7 +230,7 @@ names(dadi_df)[-c(1:2, (len_names-1):len_names)] <- names(dadi_df)[-c(1:2, (len_
   gsub("cbr2", "cbr", .) %>% 
   gsub("wht2", "wht", .) 
 
-write.table(dadi_df, "data/dadi/whtstbk_2014_dadi_pops_analysis.txt", quote = FALSE, row.names = FALSE)
+write.table(dadi_df, "data/dadi/whtstbk_2014_dadi_pops_outgroup_analysis.txt", quote = FALSE, row.names = FALSE)
 
 # merge some populations of choice
 # e.g. because they are really close geographically
