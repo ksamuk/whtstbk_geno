@@ -4,7 +4,6 @@
 # initials
 ################################################################################
 
-library("qqman")
 library("dplyr")
 library("ggplot2")
 library("tidyr")
@@ -27,8 +26,49 @@ fx_df <- read.table("data/stats/snp_stats_master.txt", header = TRUE, stringsAsF
 # permutation pvals 
 perm_df <- read.table("data/stats/outlier_permutation_df.txt", header = TRUE, stringsAsFactors = FALSE)
 
-fdr <- fdrtool(perm_df$fst_wht_cmn_pval, statistic = "pvalue")
 
-fdr
+################################################################################
+# FDR correction
+################################################################################
 
+fdr_df <- perm_df %>%
+  select(matches("pval"))
+
+# little wrapper for fdrtool
+apply_fdr_control <- function(x){
+  
+  # fdr tool doesn't handle NAs for some reason? killing me here.
+  pvals <- x[!is.na(x)]
+  
+  fdr <- fdrtool(pvals, statistic = "pvalue", plot = FALSE, verbose = FALSE)
+  
+  x[!is.na(x)] <- fdr$qval
+  
+  x
+  
+}
+
+
+fdr_df <- lapply(fdr_df, apply_fdr_control) %>% as.data.frame %>% data.frame(perm_df[,1:2], .)
+names(fdr_df) <- names(fdr_df) %>% gsub("pval", "qval", .)
+
+# apply cutoff
+out_df <- data.frame(perm_df[,1:2], fdr_df[,3:8] <= 0.05)
+
+################################################################################
+# Plot tiled windows on chromosomes
+################################################################################
+
+out_long <- gather(out_df, key = comparison, value = outlier, -chr, -pos)
+
+
+out_long %>%
+  filter(chr %in% c(1,4,7,8, 22)) %>%
+  filter(grepl("xtx", comparison)) %>%
+  filter(outlier == TRUE) %>%
+  mutate(comparison_num = as.numeric(as.factor(comparison)) * 2) %>%
+  ggplot(aes(x = pos, xmin = pos, xmax = pos + 74999, ymin = comparison_num-1, ymax = comparison_num, fill = comparison))+
+  geom_rect()+
+  facet_grid(chr~.)
+  
 
