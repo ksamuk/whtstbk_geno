@@ -13,6 +13,7 @@ library("SNPRelate")
 library("readr")
 library("dplyr")
 library("MASS")
+library("fpc")
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
@@ -107,6 +108,14 @@ pca_df %>%
   #geom_text(size = 4)
 
 pca_df %>%
+  #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
+  filter(!is.na(cluster)) %>%
+  #filter(region == "CB") %>%
+  ggplot(aes(x = EV3, y = EV4, color = cluster, label = id))+
+  geom_point(size = 2)
+#geom_text(size = 4)
+
+pca_df %>%
   filter(!(id %in% c("SR20", "LN29", "SR15"))) %>%
   #filter(region == "CB") %>%
   ggplot(aes(x = EV1, y = EV2, color = sex, label = id))+
@@ -117,8 +126,36 @@ parcoord(pca$eigenvect[,1:16], col = grepl("DK", pca_df$pop)+1, lty = 1)
 
 parcoord(pca$eigenvect[,1:16], col = pca_df$sex, lty = 1)
 
-kmeans_df <- pca_df[,2:3] %>%
+kmeans_df <- pca_df[,2:10] %>%
   filter(!(is.na(EV1)))
+
+
+# permutation of cluster separate
+
+d <- dist(kmeans_df, method="euclidean") 
+
+pfit <- hclust(d, method="ward.D")  
+
+plot(pfit, labels = pca_df$id, cex = 0.2)   
+
+
+# load the fpc package
+
+
+# set the desired number of clusters                               
+kbest.p <- 3      
+
+#   Run clusterboot() with hclust 
+#   ('clustermethod=hclustCBI') using Ward's method 
+#   ('method="ward"') and kbest.p clusters 
+#   ('k=kbest.p'). Return the results in an object 
+#   called cboot.hclust.
+cboot.hclust <- clusterboot(pmatrix, count = FALSE, B = 10000, 
+                            clustermethod=kmeansCBI,
+                            krange = 3, bootmethod=c("boot","noise","jitter"))
+
+#Clusterwise Jaccard bootstrap (omitting multiple points) mean:
+#  [1] 0.8923649 0.9042921 0.8957095
 
 pca_df$sex<- as.factor(kmeans(kmeans_df , 2, iter.max = 1000, nstart = 100)$cluster)
 

@@ -25,7 +25,7 @@ pop_names <- c("cbr", "wht", "cmn")
 # Summarise LD calculations
 ################################################################################
 
-build_ld_df <- function(pop_name, stats_files, window = FALSE){
+build_ld_decay_df <- function(pop_name, stats_files){
   
   # determine files
   stats_files_pop <- stats_files[grep(paste0(stats_folder,"/",pop_name), stats_files)]  
@@ -36,47 +36,57 @@ build_ld_df <- function(pop_name, stats_files, window = FALSE){
   
   # the magic: calculate site-wise ld (r2)
   # requires >3 pairwise r2's, each with >30 genotypes 
-  calc_sitewise_ld <- . %>%
+  
+  
+  sites_df <- stats_dfs %>%
     filter(N_INDV > 30) %>%
-    mutate(dist = abs(POS1 - POS2)) %>%
+    filter(R.2 > 0.1) %>%
     group_by(CHR, POS1) %>%
-    summarise(r2 = mean(R.2), n_sites = n()) %>%
+    summarise(n_sites = n()) %>%
     filter(n_sites > 3) %>%
+    select(CHR, POS1) %>%
     ungroup
   
-  ld_df <- calc_sitewise_ld(stats_dfs)
+  dist_df <- left_join(sites_df, stats_dfs, by = c("CHR", "POS1")) %>%
+    mutate(dist = abs(POS1 - POS2)) %>%
+    select(CHR, dist, R.2)
   
-  if (window == TRUE){
-    ld_df$w_pos2 <- (((ld_df$POS1 / 50000) %>% floor) + 1)*50000
-    ld_df$w_pos1 <- ld_df$w_pos2 - 49999
-    
-    ld_df <- ld_df %>%
-      group_by(CHR, w_pos1, w_pos2) %>%
-      summarise(r2 = mean(r2)) %>%
-      ungroup
-    
-    names(ld_df)[4] <- paste0("r2_", pop_name)
-    names(ld_df)[1] <- "chr"
-    names(ld_df)[2] <- "pos1"
-    names(ld_df)[3] <- "pos2"
-    ld_df 
-    
-  } else{
-    names(ld_df)[3] <- paste0("r2_", pop_name)
-    names(ld_df)[1] <- "chr"
-    names(ld_df)[2] <- "pos1"
-    
-    ld_df <- ld_df %>%
-      select(-n_sites) %>% 
-      ungroup()
-    ld_df
-  }
+  names(dist_df) <- c("chr", "dist", paste0(pop_name, "_r2"))
   
+  dist_df <- data.frame(pop = pop_name, dist_df[,c(1:3)])
+  
+  dist_df
+    
 }
 
-wht_ld <- build_ld_df("wht", stats_files, window = TRUE)
-cmn_ld <- build_ld_df("cmn", stats_files, window = TRUE)
-cbr_ld <- build_ld_df("cbr", stats_files, window = TRUE)
+wht_ld <- build_ld_decay_df("wht", stats_files)
+cmn_ld <- build_ld_decay_df("cmn", stats_files)
+cbr_ld <- build_ld_decay_df("cbr", stats_files)
 
-ld_df <- left_join(wht_ld, cmn_ld)
-ld_df <- left_join(ld_df, cbr_ld)
+ld_df <- full_join(wht_ld, cmn_ld)
+ld_df <- full_join(ld_df, cbr_ld)
+
+rm(wht_ld)
+rm(cmn_ld)
+rm(cbr_ld)
+
+ld_df <- gather(ld_df, key = r2_type, value = r2, -pop, -chr, -dist)
+
+ld_df <- ld_df %>%
+  filter(!is.na(r2))%>%
+  filter(!is.nan(r2))
+
+ld_df$chr <- ld_df$chr %>% gsub("chr", "", .) %>% gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
+
+binomial_smooth <- function(...) {
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), ...)
+}
+
+ld_df %>%
+  sample_frac(0.2)%>%
+  #filter(r2_type == "wht_r2") %>%
+  ggplot(aes(x = dist, y = r2, color = r2_type)) +
+  stat_smooth(span = 0.01, method = "loess")+
+  #binomial_smooth(se = FALSE)+
+  facet_wrap(~chr)
+

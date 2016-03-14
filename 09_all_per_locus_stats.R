@@ -179,6 +179,14 @@ fx_df$delta_r2_wht_cmn <-fx_df$r2_wht - fx_df$r2_cmn
 fx_df$delta_r2_wht_cbr <-fx_df$r2_wht - fx_df$r2_cbr
 fx_df$delta_r2_cbr_cmn <-fx_df$r2_cbr - fx_df$r2_cmn
 
+fx_df$abs_ihs_wht <- abs(fx_df$ihs_wht)
+fx_df$abs_ihs_cmn <- abs(fx_df$ihs_cmn)
+fx_df$abs_ihs_cbr <- abs(fx_df$ihs_cbr)
+
+fx_df$abs_rsb_wht_cmn <- abs(fx_df$rsb_wht_cmn)
+fx_df$abs_rsb_wht_cbr <- abs(fx_df$rsb_wht_cbr)
+fx_df$abs_rsb_cmn_cbr <- abs(fx_df$rsb_cmn_cbr)
+
 fst_long <- gather(fx_df, key = stat, value = value, -chr, -pos, -outlier_fst_joint, -outlier_xtx_joint)
 
 
@@ -202,19 +210,20 @@ fx_df %>%
   scale_color_manual(values=c("black", "red"))
 
 fst_long %>%
-   sample_frac(0.01)%>%
+  #sample_frac(0.01)%>%
   #filter(chr == 5) %>%
-  filter(grepl("delta", stat)) %>%
-  ggplot(aes(x = outlier_fst_joint, y = value)) +
-  geom_jitter()+
-  facet_wrap(~stat, scales = "free") +
+  filter(grepl("abs|fst", stat)) %>%
+  filter(!grepl("pval", stat)) %>%
+  ggplot(aes(x = pos, y = value, color = outlier_fst_joint)) +
+  geom_point()+
+  facet_grid(stat~chr, scales = "free", space = "free_x", switch = "x") +
   theme_classic()+
   theme(axis.text.x = element_blank(), 
         axis.ticks.x = element_blank(),
         axis.title.x = element_blank(),
         panel.margin = unit(0.1, "cm"),
-        strip.background = element_blank())
-
+        strip.background = element_blank())+
+  scale_color_manual(values=c("black", "red"))
 
 fst_long %>%
   #filter(div_stat %in% c("wht_cmn", "wht_cbr", "cbr_cmn")) %>%

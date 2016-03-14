@@ -7,7 +7,7 @@ library(stringr)
 library(ggplot2)
 library(ggthemes)
 
-# a plink 'raw' file (--recodeA)
+# a plink 'raw' file (--recodeA
 plink_file <- list.files("data/other_formats", pattern = "thinned.raw$", full.names = TRUE)
 
 # read into a genlight object
