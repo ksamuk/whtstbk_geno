@@ -17,7 +17,7 @@ list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE,
 ################################################################################
 
 # the raw "stats" files
-stats_folder <- "data/stats/2014"
+stats_folder <- "data/stats/2014_75k"
 stats_files <- list.files(stats_folder, pattern = ".txt", full.names = TRUE)
 
 # names of the populations (cbr, wht, etc.)
@@ -94,8 +94,8 @@ build_ld_df <- function(pop_name, stats_files, window = FALSE){
   ld_df <- calc_sitewise_ld(stats_dfs)
   
   if (window == TRUE){
-    ld_df$w_pos2 <- (((ld_df$POS1 / 50000) %>% floor) + 1)*50000
-    ld_df$w_pos1 <- ld_df$w_pos2 - 49999
+    ld_df$w_pos2 <- (((ld_df$POS1 / 75000) %>% floor) + 1)*75000
+    ld_df$w_pos1 <- ld_df$w_pos2 - 74999
     
     ld_df <- ld_df %>%
       group_by(CHR, w_pos1, w_pos2) %>%
@@ -144,9 +144,9 @@ read_fst_window_file <- function(file_name){
   fst_df
 }
 
-wht_cbr_fst <- read_fst_window_file("data/stats/wht_vs_cbr_50k.windowed.weir.fst")
-wht_cmn_fst <- read_fst_window_file("data/stats/wht_vs_cmn_50k.windowed.weir.fst")
-cbr_cmn_fst <- read_fst_window_file("data/stats/cbr_vs_cmn_50k.windowed.weir.fst")
+wht_cbr_fst <- read_fst_window_file("data/stats/wht_vs_cbr_75k.windowed.weir.fst")
+wht_cmn_fst <- read_fst_window_file("data/stats/wht_vs_cmn_75k.windowed.weir.fst")
+cbr_cmn_fst <- read_fst_window_file("data/stats/cbr_vs_cmn_75k.windowed.weir.fst")
 
 fst_df <- left_join(wht_cbr_fst, wht_cmn_fst)
 fst_df <- left_join(fst_df, cbr_cmn_fst)
@@ -158,8 +158,8 @@ fst_df <- left_join(fst_df, cbr_cmn_fst)
 stat_df <- left_join(ld_df, stats_df)
 stat_df <- left_join(stat_df, fst_df)
 
-write.table(stat_df, "data/stats/stats_df_2014_master.txt", row.names = FALSE, quote=FALSE)
-stat_df <- read.table("data/stats/stats_df_2014_master.txt", header = TRUE, stringsAsFactors = FALSE)
+write.table(stat_df, "data/stats/75k_stats_master.txt", row.names = FALSE, quote=FALSE)
+stat_df <- read.table("data/stats/75k_stats_master.txt", header = TRUE, stringsAsFactors = FALSE)
 
 # joint outlier score
 
