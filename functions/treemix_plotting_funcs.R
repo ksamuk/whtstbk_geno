@@ -3,6 +3,9 @@
 # functions for plotting a tree
 #
 
+# modified by kieran samuk mar 2016
+# note: these functions are rather inscrutable
+
 library(RColorBrewer)
 set_y_coords = function(d){
 	i = which(d[,3]=="ROOT")
@@ -107,7 +110,7 @@ set_x_coords = function(d, e){
                 d = set_x_coord(d, e, j)
         }
         return(d)
-	print(d)
+	#print(d)
 }
 
 
@@ -140,81 +143,7 @@ set_x_coord = function(d, e, i){
 	return(d)
 }
 
-plot_tree_internal = function(d, e, o = NA, cex = 1, disp = 0.005, plus = 0.005, arrow = 0.05, ybar = 0.01, scale = T, mbar = T, mse = 0.01, plotmig = T, plotnames = T, xmin = 0, lwd = 1, arrow_lwd = 1, font = 1, spoof_labels = NA){
-	plot(d$x, d$y, axes = F, ylab = "", xlab = "Drift parameter", xlim = c(xmin, max(d$x)+plus), pch = "")
-	axis(1)
-	mw = max(e[e[,5]=="MIG",4])
-	mcols = rev(heat.colors(150))
-	for(i in 1:nrow(e)){
-		col = "black"
-		if (e[i,5] == "MIG"){
-			w = floor(e[i,4]*200)+50
-			if (mw > 0.5){
-				w = floor(e[i,4]*100)+50
-			}
-			col = mcols[w]
-			if (is.na(col)){
-				col = "blue"
-			}
-		}
-		v1 = d[d[,1] == e[i,1],]
-		v2 = d[d[,1] == e[i,2],]
-		if (e[i,5] == "MIG"){
-			if (plotmig){
-			arrows( v1[1,]$x, v1[1,]$y, v2[1,]$x, v2[1,]$y, col = col, length = arrow, lwd = arrow_lwd)
-			}
-		}
-		else{
-			lines( c(v1[1,]$x, v2[1,]$x), c(v1[1,]$y, v2[1,]$y), col = col, lwd = lwd)
-		}
-	}
-	tmp = d[d[,5] == "TIP",]
-	print(tmp$x)
-	print(disp)
-	if ( !is.na(o)){
-		for(i in 1:nrow(tmp)){
-			tcol = o[o[,1] == tmp[i,2],2]
-			if(plotnames){
-				#print(tmp[i,2])
-				text(tmp[i,]$x+disp, tmp[i,]$y, labels = tmp[i,2], adj = 0, cex = cex, col  = tcol, font = font)
-			}
-		}
-	}
-	else{
-		if (plotnames){
-  		if (!is.na(spoof_labels)){
-  		  text(tmp$x+disp, tmp$y, labels = spoof_labels, adj = 0, cex = cex, font = font)
-  		}else{
-  		  text(tmp$x+disp, tmp$y, labels = tmp[,2], adj = 0, cex = cex, font = font)
-  		}
-		
-		}
-	}
-	if (scale){
-	print (paste("mse", mse))
-        lines(c(0, mse*10), c(ybar, ybar))
-	text( 0, ybar - 0.04, lab = "10 s.e.", adj = 0, cex  = 0.8)
-	lines( c(0, 0), c( ybar - 0.01, ybar+0.01))
-	lines( c(mse*10, mse*10), c(ybar- 0.01, ybar+ 0.01))
-	}
-        if (mbar){
-                mcols = rev( heat.colors(150) )
-                mcols = mcols[50:length(mcols)]
-                ymi = ybar+0.15
-                yma = ybar+0.35
-                l = 0.2
-                w = l/100
-                xma = max(d$x/20)
-                rect( rep(0, 100), ymi+(0:99)*w, rep(xma, 100), ymi+(1:100)*w, col = mcols, border = mcols)
-                text(xma+disp, ymi, lab = "0", adj = 0, cex = 0.7)
-		if ( mw >0.5){ text(xma+disp, yma, lab = "1", adj = 0, cex = 0.7)}
-                else{
-			text(xma+disp, yma, lab = "0.5", adj = 0, cex =0.7)
-		}
-		text(0, yma+0.06, lab = "Migration", adj = 0 , cex = 0.6)
-		text(0, yma+0.03, lab = "weight", adj = 0 , cex = 0.6)
-        }	
-}
+
 
 set_mig_coords = function(d, e){
 	for (j in 1:nrow(d)){
@@ -234,7 +163,7 @@ set_mig_coords = function(d, e){
 			#d[j,]$y = (y1+y2)* mf
                         #d[j,]$x = (x1+x2) *mf
                         d[j,]$y = y1+(y2-y1)* mf
-			print(paste(mf, x1, x2))
+			#print(paste(mf, x1, x2))
                         d[j,]$x = x1+(x2-x1) *mf
 		}	
 
@@ -263,7 +192,33 @@ get_f = function(stem){
 
 }
 
-plot_tree = function(stem, o = NA, cex = 1, disp = 0.003, plus = 0.01, flip = vector(), arrow = 0.05, scale = T, ybar = 0.1, mbar = T, plotmig = T, plotnames = T, xmin = 0, lwd = 1, arrow_lwd = 1, font = 1, spoof_labels = NA){
+
+
+get_dist_to_nmig = function(d, e, n1, n2){
+	toreturn = e[e[,1] == n1 & e[,2] == n2,3]
+	#print(toreturn)
+	while ( d[d[,1] ==n2,4] == "MIG"){
+		tmp = e[e[,1] == n2 & e[,5] == "NOT_MIG",]
+		toreturn = toreturn+tmp[1,3]
+		n2 = tmp[1,2]
+	}
+	return(toreturn)
+}
+
+flip_node = function(d, n){
+	i = which(d[,1] == n)
+	t1 = d[i,7]
+	t2 = d[i,8]
+	d[i,7] = d[i,9]
+	d[i,8] = d[i,10]
+	d[i,9] = t1
+	d[i,10] = t2
+	return(d)
+
+}
+
+# wrote this so I can inject arbitrary info into the d object before it gets passed to treemix internal
+get_treemix_d_object = function(stem, o = NA, flip = vector()){
 	d = paste(stem, ".vertices.gz", sep = "")
 	e = paste(stem, ".edges.gz", sep = "")
 	se = paste(stem, ".covse.gz", sep = "")
@@ -293,10 +248,10 @@ plot_tree = function(stem, o = NA, cex = 1, disp = 0.003, plus = 0.01, flip = ve
 
 	d = set_y_coords(d)
 	d = set_x_coords(d, e)
-	print(d)
+	#print(d)
 	d = set_mig_coords(d, e)
-	plot_tree_internal(d, e, o = o, cex = cex, xmin = xmin, disp = disp, plus = plus, arrow = arrow, ybar = ybar, mbar = mbar, mse = m, scale = scale, plotmig = plotmig, plotnames = plotnames, lwd = lwd, font = font, arrow_lwd = arrow_lwd, spoof_labels = spoof_labels)
-	return(list( d= d, e = e))
+	
+	return(d)
 }
 
 get_dist_to_nmig = function(d, e, n1, n2){

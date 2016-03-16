@@ -35,9 +35,14 @@ wht_cbr_fst <- read.table(perloc_files[2], header = TRUE, stringsAsFactors = FAL
 names(wht_cbr_fst) <- c("chr", "pos", "fst")
 wht_cbr_fst$fst[wht_cbr_fst$fst < 0] <- 0
 
+wht_cmn2012_fst <- read.table(perloc_files[4], header = TRUE, stringsAsFactors = FALSE)
+names(wht_cmn2012_fst) <- c("chr", "pos", "fst")
+wht_cmn2012_fst$fst[wht_cmn2012_fst$fst < 0] <- 0
+
 fst_df <- full_join(wht_cmn_fst, wht_cbr_fst, by = c("chr", "pos"))
 fst_df <- full_join(fst_df, cbr_cmn_fst, by = c("chr", "pos"))
-names(fst_df)[3:5] <- c("fst_wht_cmn", "fst_wht_cbr", "fst_cbr_cmn")
+fst_df <- full_join(fst_df, wht_cmn2012_fst, by = c("chr", "pos"))
+names(fst_df)[3:6] <- c("fst_wht_cmn", "fst_wht_cbr", "fst_cbr_cmn", "fst_wht_cmn2012")
 fst_df$chr <- fst_df$chr %>% gsub("chr", "", .) %>% gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
 
 ################################################################################

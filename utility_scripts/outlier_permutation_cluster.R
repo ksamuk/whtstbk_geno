@@ -1,6 +1,6 @@
 # outlier window permutation test
 
-library("dplyr")
+library("parallel")
 
 is.outlier <- function(x, cutoff = 0.95){
   
@@ -11,7 +11,7 @@ is.outlier <- function(x, cutoff = 0.95){
 
 #fx_df <- read.table("data/stats/snp_stats_master.txt", header = TRUE, stringsAsFactors = FALSE)
 
-fx_df <- read.table("data/stats/snp_stats_master.txt", header = TRUE, stringsAsFactors = FALSE)
+fx_df <- read.table("snp_stats_master.txt", header = TRUE, stringsAsFactors = FALSE)
 
 outlier_wht_cmn <- is.outlier(fx_df$fst_wht_cmn, cutoff = 0.99)
 outlier_wht_cmn2012 <- is.outlier(fx_df$fst_wht_cmn2012, cutoff = 0.99)
@@ -177,7 +177,9 @@ indexes <- c(1:8)
 #                        mc.silent = FALSE, mc.cores = 6,
 #                        mc.cleanup = TRUE, mc.allow.recursive = TRUE)
 
-outlier_df <- lapply(indexes, permute_outlier_windows, reps = 10, cutoff = 0.99, outlier_names = outlier_names, outlier_df_list = outlier_df_list, fast = FALSE)
+#outlier_df <- lapply(indexes, permute_outlier_windows, reps = 10, cutoff = 0.99, outlier_names = outlier_names, outlier_df_list = outlier_df_list, fast = FALSE)
+
+outlier_df <- mclapply(indexes, permute_outlier_windows, reps = 10000, cutoff = 0.99, outlier_names = outlier_names, outlier_df_list = outlier_df_list, fast = FALSE, mc.preschedule = FALSE, mc.set.seed = TRUE, mc.silent = FALSE, mc.cores = 8, mc.cleanup = TRUE, mc.allow.recursive = TRUE)
 
 outlier_out_df <- outlier_df[[1]] %>% left_join(outlier_df[[2]], by = c("chr_window")) %>%
   left_join(outlier_df[[3]], by = c("chr_window")) %>%
