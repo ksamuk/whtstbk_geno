@@ -1,7 +1,7 @@
 library(viridis)
 library(shape)
 
-plot_tree = function(stem, o = NA, cex = 1, disp = 0.003, plus = 0.01, flip = vector(), arrow = 0.05, scale = T, ybar = 0.1, mbar = T, plotmig = T, plotnames = T, xmin = 0, lwd = 1, arrow_lwd = 1, font = 1, spoof_labels = NA, spoof_cols = spoof_cols, use_viridis = TRUE, use_alpha = TRUE, arrow_lty = 1){
+plot_tree = function(stem, o = NA, cex = 1, disp = 0.003, plus = 0.01, flip = vector(), arrow = 0.05, scale = T, ybar = 0.1, mbar = T, plotmig = T, plotnames = T, xmin = 0, lwd = 1, arrow_lwd = 1, font = 1, spoof_labels = NA, spoof_cols = spoof_cols, use_viridis = TRUE, use_alpha = TRUE, arrow_lty = 1, shadow = 0.5){
   d = paste(stem, ".vertices.gz", sep = "")
   e = paste(stem, ".edges.gz", sep = "")
   se = paste(stem, ".covse.gz", sep = "")
@@ -38,11 +38,11 @@ plot_tree = function(stem, o = NA, cex = 1, disp = 0.003, plus = 0.01, flip = ve
     
     d[,2][!is.na(d[,2])] <- spoof_labels
   }
-  plot_tree_internal(d, e, o = o, cex = cex, xmin = xmin, disp = disp, plus = plus, arrow = arrow, ybar = ybar, mbar = mbar, mse = m, scale = scale, plotmig = plotmig, plotnames = plotnames, lwd = lwd, font = font, arrow_lwd = arrow_lwd, spoof_cols = spoof_cols, use_viridis = use_viridis, use_alpha= use_alpha, arrow_lty = arrow_lty)
+  plot_tree_internal(d, e, o = o, cex = cex, xmin = xmin, disp = disp, plus = plus, arrow = arrow, ybar = ybar, mbar = mbar, mse = m, scale = scale, plotmig = plotmig, plotnames = plotnames, lwd = lwd, font = font, arrow_lwd = arrow_lwd, spoof_cols = spoof_cols, use_viridis = use_viridis, use_alpha= use_alpha, arrow_lty = arrow_lty, shadow = shadow)
   #return(list( d= d, e = e))
 }
 
-plot_tree_internal = function(d, e, o = NA, cex = 1, disp = 0.005, plus = 0.005, arrow = 0.05, ybar = 0.01, scale = T, mbar = T, mse = 0.01, plotmig = T, plotnames = T, xmin = 0, lwd = 1, arrow_lwd = 1, font = 1, spoof_cols = spoof_cols, use_viridis = TRUE, use_alpha= TRUE, arrow_lty = 1){
+plot_tree_internal = function(d, e, o = NA, cex = 1, disp = 0.005, plus = 0.005, arrow = 0.05, ybar = 0.01, scale = T, mbar = T, mse = 0.01, plotmig = T, plotnames = T, xmin = 0, lwd = 1, arrow_lwd = 1, font = 1, spoof_cols = spoof_cols, use_viridis = TRUE, use_alpha= TRUE, arrow_lty = 1, shadow = 0.5){
   
   plot(d$x, d$y, axes = F, ylab = "", xlab = "Drift parameter", xlim = c(xmin, max(d$x)+plus), pch = "")
   axis(1)
@@ -101,7 +101,7 @@ plot_tree_internal = function(d, e, o = NA, cex = 1, disp = 0.005, plus = 0.005,
   else{
     if (plotnames){
       shadowtext(tmp$x+disp, tmp$y, labels = tmp[,2], adj = 0, cex = cex, font = font, col = spoof_cols,
-                 bg = "white")
+                 bg = "white", r=shadow)
       #text(tmp$x+disp, tmp$y, labels = tmp[,2], adj = 0, cex = cex, font = font, col = spoof_cols)
     }
   }
@@ -141,7 +141,7 @@ plot_tree_internal = function(d, e, o = NA, cex = 1, disp = 0.005, plus = 0.005,
 # from TeachingDemos
 
 shadowtext <- function(x, y=NULL, labels, col='white', bg='black',
-         theta= seq(pi/4, 2*pi, length.out=500), r=0.1,... ) {
+         theta= seq(pi/4, 2*pi, length.out=500), r=0.05,... ) {
   
   xy <- xy.coords(x,y)
   xo <- r*strwidth('A')

@@ -43,21 +43,21 @@ spoof_labels <- spoof_labels %>% gsub("[a-z_]*", "", .)
 suppressWarnings(plot_tree(slug, spoof_labels = spoof_labels, spoof_cols = spoof_cols, ...))
 }
 
-plot_treemix_wrapper(slugs[5], arrow = 0.1, lwd = 3, font = 2, disp = 0.0003, 
+plot_treemix_wrapper(slugs[4], arrow = 0.1, lwd = 3, font = 2, disp = 0.0005, 
                      plus = 0.005, arrow_lwd = 3, plotnames = TRUE, cex = 1, use_viridis = FALSE, use_alpha = FALSE,
-                     arrow_lty = 1, ybar = 0.5)
+                     arrow_lty = 1, ybar = 0.5, shadow = 0.1)
 
 
 ################################################################################
 # plot residuals
 ################################################################################
 
-pop_order <- data.frame(pop = c("AL_cmn","CL_cmn","CL_wht","DK_dk","GC_cbr","LN_cbr","MH_cmn","MH_wht","MR_cbr","RT_wht","SF_cmn","SF_wht", "SH_cmn","SH_wht","SK_cbr","SR_cmn","SR_wht"))
+pop_order <- data.frame(pop = c("AL_cmn","CL_cmn","CL_wht","DK_dk","GC_cbr","LN_cbr","MH_cmn","MH_wht","MR_cbr","RT_wht","SF_cmn","SF_wht", "SH_cmn","SH_wht","SK_cbr","SR_cmn","SR_wht", "CP_cmn"))
 pop_order$cluster <- gsub("[^a-z]*", "", pop_order$pop)
 pop_order <- pop_order %>%
   arrange(cluster)
 
-lapply(slugs[2], plot_resid_fixed, pop_order = pop_order$pop)
+lapply(slugs[4], plot_resid_fixed, pop_order = as.character(pop_order$pop))
 
 ################################################################################
 # harvest migration edge pvalues
