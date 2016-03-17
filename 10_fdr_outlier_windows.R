@@ -141,6 +141,7 @@ snp_df$ihs_abs_delta <- snp_df$ihs_abs_wht - snp_df$ihs_abs_cmn
 wind_df$chr <- wind_df$chr <- wind_df$chr %>% gsub("chr", "", .) %>% gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
 
 snp_df <- left_join(snp_df, wind_df %>% select(-matches("fst|r2")))
+snp_df <- read.table("data/stats/big_stats_master.txt", h = T, stringsAsFactors = FALSE)
 
 snp_long <- gather(snp_df , key = stat, value = value, -chr, -pos1, -pos, -matches("adj"))
 
@@ -149,7 +150,7 @@ snp_long <- gather(snp_df , key = stat, value = value, -chr, -pos1, -pos, -match
 ################################################################################# 
 
 # whole chromosome view
-snp_long %>% 
+wcv <- snp_long %>% 
   filter(chr == 4) %>%
   filter(!grepl("cbr", stat)) %>%
   filter(grepl("rsb_wht_cmn|fst_wht_cmn|fst_cbr_cmn|tajd_wht|tajd_cmn|pi_site_wht|pi_site_cmn", stat)) %>%
@@ -164,6 +165,39 @@ snp_long %>%
         strip.background = element_blank(),
         legend.position ="none")+
   scale_color_manual(values=c("grey", "red"))
+
+ggsave("wcv_chrIV.png", wcv, width = 11, height = 8.5)
+
+# loadings vs selection metrics
+snp_df %>% 
+  #filter(chr == 4) %>%
+  ggplot(aes(x = abs(load_ev1), y = rsb_wht_cmn))+
+  geom_point(alpha = 0.5)+
+  geom_smooth()+
+  theme_classic()+
+  scale_x_continuous(expand = c(0, 0), limits = c(0,NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0,NA))
+
+snp_df %>% 
+  #filter(chr == 4) %>%
+  ggplot(aes(x = abs(load_ev1), y = as.numeric(outlier_xtx_wht_cmn) %>% jitter()))+
+  geom_point(alpha = 0.5)+
+  stat_smooth(method = "glm", method.args = list(family = "binomial"))+
+  theme_classic()+
+  scale_x_continuous(expand = c(0, 0), limits = c(0,NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0,1.02))
+
+snp_df %>% 
+  #filter(chr == 4) %>%
+  ggplot(aes(x = abs(load_ev1), y = fst_wht_cmn))+
+  geom_point(alpha = 0.5)+
+  geom_smooth()+
+  theme_classic()+
+  scale_x_continuous(expand = c(0, 0), limits = c(0,NA)) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(0,NA))
+
+
+ggsave("loading_selection_chrIV.png", wcv, width = 11, height = 8.5)
 
 # boxplot outlier vs. genome
 snp_long %>% 
