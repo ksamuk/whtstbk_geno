@@ -14,6 +14,7 @@ library("readr")
 library("dplyr")
 library("MASS")
 library("fpc")
+library("ggthemes")
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
@@ -23,7 +24,7 @@ meta_df <- read.csv("metadata/mega_meta.csv")
 
 # raw snps (raw ped file)
 #raw_snps <- data.frame(fread("data/snp_tables/whtstbk_all_pruned.gz", stringsAsFactors = FALSE, header = TRUE))
-raw_snps <- read.table("data/snp_tables/whtstbk_2014_pruned.gz", header = TRUE, stringsAsFactors = FALSE)
+raw_snps <- read.table("data/snp_tables/whtstbk_all_pruned.gz", header = TRUE, stringsAsFactors = FALSE)
 
 # extract genotypes into matrix
 geno_matrix <- data.matrix(raw_snps[,-c(1:6)])
@@ -40,8 +41,7 @@ pos_df <- pos_df %>%
   mutate(chr = gsub("chr", "", chr) %>% as.character %>% as.roman %>% as.integer) %>%
   mutate(pos = pos %>% as.character %>% as.integer)
       
-
-snpgdsCreateGeno("data/snp_relate/whtstbk_2014_pruned.gds", genmat = geno_matrix, 
+snpgdsCreateGeno("data/snp_relate/whtstbk_all_pruned.gds", genmat = geno_matrix, 
                  sample.id = sample_id, snpfirstdim = FALSE, 
                  snp.id = snp_id, snp.chromosome = pos_df$chr, snp.position = pos_df$pos)
 # reclaim memory
@@ -57,15 +57,15 @@ genofile_2014 <- snpgdsOpen("data/snp_relate/whtstbk_2014_pruned.gds", allow.dup
 pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15", sample_id)]
 
 
-diss <- snpgdsDiss(genofile_2014)
+diss <- snpgdsDiss(genofile_all)
 clust <- snpgdsHCluster(diss)
 cut_tree <- snpgdsCutTree(clust)
 tmp <- snpgdsDrawTree(clust, shadow.col = 10)
 
-pca <- snpgdsPCA(genofile_2014, num.thread = 3, eigen.cnt = 16)
+pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16)
 
 
-pca_load <- snpgdsPCASNPLoading(pca, genofile_2014, num.thread = 3)
+pca_load <- snpgdsPCASNPLoading(pca, genofile_all, num.thread = 3)
 
 load_df <- data.frame(snp = pca_load$snp.id, load_ev1 = t(pca_load$snploading)[,1], load_ev2 = t(pca_load$snploading)[,2])
 
@@ -98,13 +98,20 @@ pca_df <- left_join(tab, meta_df) %>%
 pca_df$id <- pca_df$id %>% gsub("whtstbk_gbs_|brds_", "", .)
 pca_df$id <- pca_df$id %>% gsub("NG-5241_[0-9]*_STD_", "", .)
 
+# percent variance explained by PCs
+var_prop <- pca$varprop[1:2]
+var_prop <- pca$varprop[1:2]*100
+var_prop <- signif(var_prop, 2)
 
 pca_df %>%
   #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
   filter(!is.na(cluster)) %>%
   #filter(region == "CB") %>%
   ggplot(aes(x = EV1, y = EV2, color = cluster, label = id))+
-  geom_point(size = 2)
+  geom_point(size = 1) +
+  theme_bw() +
+  xlab(paste0("PC1 ", "(",var_prop[1], "%)"))+
+  ylab(paste0("PC2 ", "(",var_prop[2], "%)"))
   #geom_text(size = 4)
 
 pca_df %>%

@@ -18,7 +18,6 @@ Nref <-  theta / (4*mu1*20000*10000*0.8)
 
 dadi_files <- list.files("data/dadi/results", full.names = TRUE)
 
-
 parse_dadi_file <- function(x){
   
   #open file and read lines
@@ -70,10 +69,10 @@ dadi_ln <- dadi_df %>%
   gather(key = coefficient, value = value, -log_lik, -pop, -run)
 
 dadi_ln %>%
-  filter(pop == "CL") %>%
+  filter(pop == "CL") %>% View
   ggplot(aes (x = as.numeric(run), y = value, color = as.numeric(log_lik)))+
   geom_point()+
-  #geom_line()+
+  geom_line()+
   facet_grid(coefficient~., scales = "free_y")
 
 
