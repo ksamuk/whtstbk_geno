@@ -5,6 +5,11 @@
 #biocLite("gdsfmt")
 #biocLite("SNPRelate")
 # install_github("slowkow/ggrepel")
+# install_github("dill/beyonce")
+
+################################################################################
+# initials
+################################################################################
 
 # libraries
 library("ggplot2")
@@ -15,10 +20,16 @@ library("dplyr")
 library("MASS")
 library("fpc")
 library("ggthemes")
+library("ggrepel")
+library("RColorBrewer")
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
 select <- dplyr::select
+
+################################################################################
+# raw data 
+################################################################################
 
 meta_df <- read.csv("metadata/mega_meta.csv")
 
@@ -40,45 +51,49 @@ pos_df <- pos_df %>%
   mutate(chr = gsub("Un", "XXII", chr)) %>%
   mutate(chr = gsub("chr", "", chr) %>% as.character %>% as.roman %>% as.integer) %>%
   mutate(pos = pos %>% as.character %>% as.integer)
+
+################################################################################
+# create/open gen object 
+################################################################################
       
-snpgdsCreateGeno("data/snp_relate/whtstbk_all_pruned.gds", genmat = geno_matrix, 
-                 sample.id = sample_id, snpfirstdim = FALSE, 
-                 snp.id = snp_id, snp.chromosome = pos_df$chr, snp.position = pos_df$pos)
+#snpgdsCreateGeno("data/snp_relate/whtstbk_all_pruned.gds", genmat = geno_matrix, 
+#                 sample.id = sample_id, snpfirstdim = FALSE, 
+#                 snp.id = snp_id, snp.chromosome = pos_df$chr, snp.position = pos_df$pos)
 # reclaim memory
 rm(list=c("pos_df", "geno_matrix"))
 
 # CAN START HERE
 genofile_all <- snpgdsOpen("data/snp_relate/whtstbk_all_pruned.gds", allow.duplicate = TRUE)
-genofile_2014 <- snpgdsOpen("data/snp_relate/whtstbk_2014_pruned.gds", allow.duplicate = TRUE)
-
+#genofile_2014 <- snpgdsOpen("data/snp_relate/whtstbk_2014_pruned.gds", allow.duplicate = TRUE)
 
 #snpgdsClose(genofile)
 
-pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15", sample_id)]
+################################################################################
+# perform pca
+################################################################################
 
+# odd samples to remove (e.g. low data)
+pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15|whtstbk_gbs_2012_brds_SR16", sample_id)]
 
-diss <- snpgdsDiss(genofile_all)
-clust <- snpgdsHCluster(diss)
-cut_tree <- snpgdsCutTree(clust)
-tmp <- snpgdsDrawTree(clust, shadow.col = 10)
+#diss <- snpgdsDiss(genofile_all, sample.id = pca_samples)
+#clust <- snpgdsHCluster(diss)
+#tmp <- snpgdsDrawTree(clust)
 
-pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16)
+# do the actual PCA
+pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16, sample.id = pca_samples)
 
-
+# extract loadings
 pca_load <- snpgdsPCASNPLoading(pca, genofile_all, num.thread = 3)
-
 load_df <- data.frame(snp = pca_load$snp.id, load_ev1 = t(pca_load$snploading)[,1], load_ev2 = t(pca_load$snploading)[,2])
-
 load_df$chr <- load_df$snp %>% gsub("\\..*|chr", "",. ) %>% 
   gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
   
 load_df$pos <- load_df$snp %>% gsub("chr.*\\.|_[A-Z]*", "",. ) %>% as.numeric
-
 load_df <- load_df %>%
   dplyr::select(chr, pos, load_ev1, load_ev2)
-
 write.table(load_df, "data/stats/whtstbk_2014_pca_loadings.txt", row.names= FALSE, quote = FALSE)
 
+# create PCA data frame
 tab <- data.frame(id = pca$sample.id,
                   EV1 = pca$eigenvect[,1],    # the first eigenvector
                   EV2 = pca$eigenvect[,2],    # the second eigenvector
@@ -88,7 +103,6 @@ tab <- data.frame(id = pca$sample.id,
                   EV6 = pca$eigenvect[,6],    # the second eigenvector
                   EV7 = pca$eigenvect[,7],    # the second eigenvector
                   stringsAsFactors = FALSE)
-head(tab)
 
 #convert ids to match metadata
 #tab$id <- tab$id %>% gsub("whtstbk_gbs_|brds_", "", .)
@@ -103,35 +117,47 @@ var_prop <- pca$varprop[1:2]
 var_prop <- pca$varprop[1:2]*100
 var_prop <- signif(var_prop, 2)
 
+################################################################################
+# plots
+################################################################################
+
+# color palatte
+
+pal <- c(rev(brewer.pal(3, "Set1")), "#984EA3")
+#pal <- rev(wes_palette("Royal2", 3, type = "continuous"))
+#pal <- c("#4bbfc0","#e87348","#3f95ca","#c43896")
+
+# clusters
+
+# region names
+
+cluster_short <- c("cmn", "cbr", "wht")
+cluster_names <- c("Mainland Common", "Bras d'Or Common", "White")
+region_short <- c("AN", "CB", "HA", "GY")
+region_names <- c("Antigonish", "Bras d'Or", "Halifax", "Guysborough")
+pop_names <- c("Antigonish Land", "Black River", "Canal Lake", "Captain's Pond", "Gillies Cove", "Little Narrows",
+               "Milford Haven", "Middle River", "River Tillard", "St. Francais Harbour", "Sheet Harbour", "Skye River",
+               "Salmon River", "Porper Pond", "Pomquet", "Right's River")
+
 pca_df %>%
+  mutate(Year = as.factor(year) %>% reorder (., . == "2012")) %>%
+  mutate(Sex = sex) %>%
+  mutate(Sex = ifelse(Sex == "M", "Male", "Female")) %>%
+  mutate(Group = cluster_names[match(cluster, cluster_short)]) %>%
+  mutate(Region = region_names[match(region, region_short)]) %>%
   #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
   filter(!is.na(cluster)) %>%
   #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, color = cluster, label = id))+
-  geom_point(size = 1) +
+  ggplot(aes(x = EV1, y = EV2, color = Sex, label = id, shape = Year))+
+  geom_point(size = 3) +
   theme_bw() +
+  theme(legend.key = element_blank())+
   xlab(paste0("PC1 ", "(",var_prop[1], "%)"))+
-  ylab(paste0("PC2 ", "(",var_prop[2], "%)"))
-  #geom_text(size = 4)
-
-pca_df %>%
-  #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
-  filter(!is.na(cluster)) %>%
-  #filter(region == "CB") %>%
-  ggplot(aes(x = EV3, y = EV4, color = cluster, label = id))+
-  geom_point(size = 2)
-#geom_text(size = 4)
-
-pca_df %>%
-  filter(!(id %in% c("SR20", "LN29", "SR15"))) %>%
-  #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, color = sex, label = id))+
-  geom_point(size = 2)
-#geom_text(size = 4)
-
-parcoord(pca$eigenvect[,1:16], col = grepl("DK", pca_df$pop)+1, lty = 1)
-
-parcoord(pca$eigenvect[,1:16], col = pca_df$sex, lty = 1)
+  ylab(paste0("PC2 ", "(",var_prop[2], "%)"))+
+  #facet_wrap(~region, scales = "free")+
+  #scale_color_manual(values = pal)
+  scale_color_brewer(palette = "Set1")
+ 
 
 kmeans_df <- pca_df[,2:10] %>%
   filter(!(is.na(EV1)))

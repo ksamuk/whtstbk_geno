@@ -141,9 +141,14 @@ snp_df$ihs_abs_delta <- snp_df$ihs_abs_wht - snp_df$ihs_abs_cmn
 wind_df$chr <- wind_df$chr <- wind_df$chr %>% gsub("chr", "", .) %>% gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
 
 snp_df <- left_join(snp_df, wind_df %>% select(-matches("fst|r2")))
+
 snp_df <- read.table("data/stats/big_stats_master.txt", h = T, stringsAsFactors = FALSE)
 
+write.table(snp_df, "data/stats/big_stats_master.txt", row.names = FALSE, quote = FALSE)
+
 snp_long <- gather(snp_df , key = stat, value = value, -chr, -pos1, -pos, -matches("adj"))
+
+write.table(snp_long, "data/stats/big_stats_master.txt", row.names = FALSE, quote = FALSE)
 
 ################################################################################
 # plots
@@ -227,5 +232,22 @@ snp_long %>%
   geom_rect()+
   facet_grid(chr~.)+
   xlim(0, NA)
+
+# mahattan
+
+snp_long %>%
+  #filter(div_stat %in% c("wht_cmn", "wht_cbr", "cbr_cmn")) %>%
+  filter((grepl("^fst_wht_cmn", stat))) %>%
+  #sample_frac(0.01) %>%
+  ggplot(aes(x = pos, y = value, color = fst_outlier_adj)) +
+  geom_point(size = 1)+
+  facet_grid(stat~chr, scales = "free", space = "free_x", switch = "x") +
+  theme_classic()+
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        axis.title.x = element_blank(),
+        panel.margin = unit(0.1, "cm"),
+        strip.background = element_blank())+
+  scale_color_manual(values=c("grey", "red"))
 
 
