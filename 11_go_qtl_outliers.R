@@ -1,6 +1,7 @@
 # GO / QTL Anaylsis
 
 library("dplyr")
+library("parallel")
 
 # get gene list for all sites
 sites_df <- read.table("metadata/all_whtstbk_sites.txt", h = T)
@@ -54,7 +55,11 @@ find_gene_by_chr_pos <- function(index, glazer_genes, slack = 0, window_size = 7
       filter(pos1 - slack <= targ2, pos2 + slack >= targ2)
     
     gene <- unique(gene_df1$gene_id, gene_df2$gene_id)
+    if(length(gene) == 0){
+      gene <- NA
+    }
     gene_df <- data.frame(chr = chr_target, window = pos_target, gene)
+    gene_df
     
   } else{
     
@@ -65,9 +70,12 @@ find_gene_by_chr_pos <- function(index, glazer_genes, slack = 0, window_size = 7
       filter(chr == chr_target) %>%
       filter(pos1 - slack <= pos_target, pos2 + slack >= pos_target)
     
-    
     gene <- unique(gene_df$gene_id)
+    if(length(gene) == 0){
+      gene <- NA
+    }
     gene_df <- data.frame(chr = chr_target, pos = pos_target, gene)
+    gene_df
     
   }
   
@@ -75,6 +83,6 @@ find_gene_by_chr_pos <- function(index, glazer_genes, slack = 0, window_size = 7
 
 tmp_wind <- sites_df %>% filter(chr == 1) %>% select(window) %>% unlist
 
+indexes <- 1:nrow(sites_df)
 
-lapply()
-find_gene_by_chr_pos(1, tmp_wind[50], glazer_genes)
+gene_df <- mclapply(indexes, find_gene_by_chr_pos, glazer_genes = glazer_genes, )
