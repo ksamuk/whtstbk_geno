@@ -105,7 +105,6 @@ snp_df$pos1 <- snp_df$pos2 - 74999
 #snp_df <- left_join(out_df %>% select(-matches("qval")), snp_df %>% select(-pos2, -matches("xtx|fst|outlier|pval")))
 snp_df <- left_join(out_df %>% select(-matches("qval")), snp_df %>% select(-pos2))
 
-
 # pi site data
 wht_pi <- read.table("data/stats/wht_pi.site.2014.txt", header = TRUE, stringsAsFactors = FALSE)
 cmn_pi <- read.table("data/stats/cmn_pi.site.2014.txt", header = TRUE, stringsAsFactors = FALSE)
@@ -145,6 +144,15 @@ snp_df <- left_join(snp_df, wind_df %>% select(-matches("fst|r2")))
 snp_df <- read.table("data/stats/big_stats_master.txt", h = T, stringsAsFactors = FALSE)
 
 write.table(snp_df, "data/stats/big_stats_master.txt", row.names = FALSE, quote = FALSE)
+
+# write table of sites for GO/QTL analysis
+
+sites_df <- snp_df %>%
+  select(chr, pos1, pos, fst_outlier_adj, xtx_outlier_adj)
+
+names(sites_df)[2:3] <- c("window", "pos")
+
+write.table(sites_df , "metadata/all_whtstbk_sites.txt", row.names = FALSE, quote = FALSE)
 
 snp_long <- gather(snp_df , key = stat, value = value, -chr, -pos1, -pos, -matches("adj"))
 
