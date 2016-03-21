@@ -182,15 +182,19 @@ wcv <- snp_long %>%
 ggsave("wcv_chrIV.png", wcv, width = 11, height = 8.5)
 
 # loadings vs selection metrics
+
+# rsb
 snp_df %>% 
   #filter(chr == 4) %>%
-  ggplot(aes(x = abs(load_ev1), y = rsb_wht_cmn))+
-  geom_point(alpha = 0.5)+
+  ggplot(aes(x = abs(load_ev1), y = rsb_wht_cmn, color = "wht_cmn"))+
+  geom_point(alpha = 0.5, color = "black")+
   geom_smooth()+
+  geom_smooth(aes(y=rsb_cmn_cbr, color = "cmn_cbr"))+
   theme_classic()+
   scale_x_continuous(expand = c(0, 0), limits = c(0,NA)) + 
   scale_y_continuous(expand = c(0, 0), limits = c(0,NA))
 
+# xtx OUTLIERS
 snp_df %>% 
   #filter(chr == 4) %>%
   ggplot(aes(x = abs(load_ev1), y = as.numeric(outlier_xtx_wht_cmn) %>% jitter()))+

@@ -5,6 +5,7 @@
 ################################################################################
 
 library("dplyr")
+<<<<<<< HEAD
 library("ggplot2")
 library("ggrepel")
 library("biomaRt")
@@ -12,6 +13,8 @@ library("biomaRt")
 ################################################################################
 # raw data
 ################################################################################
+
+library("parallel")
 
 # get gene list for all sites
 sites_df <- read.table("metadata/all_whtstbk_sites.txt", h = T)
@@ -29,17 +32,17 @@ glazer_genes <- glazer_genes[,c(1,3:5,10,12)]
 # rename columns
 names(glazer_genes) <- c("chr", "type", "pos1", "pos2", "gene_id", "trans_id")
 
+# no mitochondria
 glazer_genes <- filter(glazer_genes, chr != "chrM")
 
 # chr to numeric
 glazer_genes$chr <- glazer_genes$chr %>% gsub("chr", "", .) %>% gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
 
 # clean gene/transnames
-
 glazer_genes$gene_id <- glazer_genes$gene_id %>% gsub(";", "", .)
 glazer_genes$trans_id <- glazer_genes$trans_id %>% gsub(";", "", .)
 
-
+# arrange
 glazer_genes <- glazer_genes %>%
   arrange(chr, pos1)
 
@@ -53,11 +56,14 @@ glazer_genes <- glazer_genes %>%
 ################################################################################
 
 
-# join sites + genes
 
-find_gene_by_chr_pos <- function(chr_target, pos_target, glazer_genes, slack = 0, window_size = 75000){
+find_gene_by_chr_pos <- function(index, glazer_genes, slack = 0, window_size = 75000){
   
   if(window_size > 0){
+    
+    chr_target <- sites_df$chr[index]
+    pos_target <- sites_df$window[index]
+    
     targ1 <- pos_target
     targ2 <- pos_target + (window_size - 2)
     
@@ -79,14 +85,21 @@ find_gene_by_chr_pos <- function(chr_target, pos_target, glazer_genes, slack = 0
     }
     
     
-    
   } else{
+    
+    chr_target <- sites_df$chr[index]
+    pos_target <- sites_df$pos[index]
     
     gene_df <- glazer_genes %>%
       filter(chr == chr_target) %>%
       filter(pos1 - slack <= pos_target, pos2 + slack >= pos_target)
     
-    unique(gene_df$gene_id)
+    gene <- unique(gene_df$gene_id)
+    if(length(gene) == 0){
+      gene <- NA
+    }
+    gene_df <- data.frame(chr = chr_target, pos = pos_target, gene)
+    gene_df
     
   }
   
@@ -168,8 +181,3 @@ match_df %>%
   #geom_text(aes(x = gene_pos1, label = gene, y = 3, check_overlap = TRUE), size = 2)+
   geom_label_repel(aes(x = gene_pos1, label = gene, y = 3), size = 2)+
   scale_fill_manual(values = c("grey", "red"))
-
-
-
-
-
