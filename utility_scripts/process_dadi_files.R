@@ -11,11 +11,10 @@ library("ggplot2")
 mu1 <- 7.1*(10)^-9
 mu2 <- 6.8*(10)^-8
 theta <- 9723.27623947
+Nref <-  theta / (4*mu1*30000*10000*0.8)
 Nref <-  theta / (4*mu1*20000*10000*0.7)
 div_t <- (T1*2*Nref * 1)/1e6
-
 Nref = theta/(4*mu*L)
-
 
 # list of dadi results
 
