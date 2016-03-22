@@ -1,11 +1,13 @@
 
 # pacakge installation
-# library(devtools)
+library(devtools)
 #source("http://bioconductor.org/biocLite.R")
 #biocLite("gdsfmt")
 #biocLite("SNPRelate")
 # install_github("slowkow/ggrepel")
-# install_github("dill/beyonce")
+install_github("dill/beyonce")
+
+install_github("stanstrup/heatmap3")
 
 ################################################################################
 # initials
@@ -17,11 +19,13 @@ library("gdsfmt")
 library("SNPRelate")
 library("readr")
 library("dplyr")
+library("tidyr")
 library("MASS")
 library("fpc")
 library("ggthemes")
 library("ggrepel")
 library("RColorBrewer")
+library("heatmap3")
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
@@ -75,52 +79,110 @@ genofile_all <- snpgdsOpen("data/snp_relate/whtstbk_all_pruned.gds", allow.dupli
 # odd samples to remove (e.g. low data)
 pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15|whtstbk_gbs_2012_brds_SR16", sample_id)]
 
-#diss <- snpgdsDiss(genofile_all, sample.id = pca_samples)
+snpgdsSampMissRate(genofile_all)
+
+diss <- snpgdsIBS(genofile_all, sample.id = pca_samples, num.thread = 3, maf= 0.05, missing.rate = 0.05)
+diss_mat <- diss$ibs
+row.names(diss_mat) <- diss$sample.id
+colnames(diss_mat) <- diss$sample.id
+
+cols <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
+
+distCor <- function(x) as.dist(1-cor(t(x)))
+hclustAvg <- function(x) hclust(x, method="average")
+
+heatmap.3(diss_males, trace="none", zlim=c(-3,3), reorder=FALSE,
+          distfun=distCor, hclustfun=hclustAvg, col=rev(cols), symbreak=FALSE) 
+
+
 #clust <- snpgdsHCluster(diss)
 #tmp <- snpgdsDrawTree(clust)
 
-# do the actual PCA
-pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16, sample.id = pca_samples, missing.rate = 0.05, maf = 0.05)
-#pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16, missing.rate = 0.05, maf = 0.05)
+# males 2012 and 2014
 
-# extract loadings
-pca_load <- snpgdsPCASNPLoading(pca, genofile_all, num.thread = 3)
-load_df <- data.frame(snp = pca_load$snp.id, load_ev1 = t(pca_load$snploading)[,1], load_ev2 = t(pca_load$snploading)[,2])
-load_df$chr <- load_df$snp %>% gsub("\\..*|chr", "",. ) %>% 
-  gsub("Un", "XXII", .) %>% as.roman %>% as.numeric
-  
-load_df$pos <- load_df$snp %>% gsub("chr.*\\.|_[A-Z]*", "",. ) %>% as.numeric
-load_df <- load_df %>%
-  dplyr::select(chr, pos, load_ev1, load_ev2)
-write.table(load_df, "data/stats/whtstbk_2014_pca_loadings.txt", row.names= FALSE, quote = FALSE)
+male_ids <- meta_df %>%
+  filter(sex == "M") %>%
+  filter(pop %in% c("SR", "SF", "WR")) %>%
+  select(id) %>% unlist %>% as.character
 
-# create PCA data frame
-tab <- data.frame(id = pca$sample.id,
-                  EV1 = pca$eigenvect[,1],    # the first eigenvector
-                  EV2 = pca$eigenvect[,2],    # the second eigenvector
-                  EV3 = pca$eigenvect[,3],    # the second eigenvector
-                  EV4 = pca$eigenvect[,4],    # the second eigenvector
-                  EV5 = pca$eigenvect[,5],    # the second eigenvector
-                  EV6 = pca$eigenvect[,6],    # the second eigenvector
-                  EV7 = pca$eigenvect[,7],    # the second eigenvector
-                  stringsAsFactors = FALSE)
+# remove low coverage individuals
 
-#convert ids to match metadata
-#tab$id <- tab$id %>% gsub("whtstbk_gbs_|brds_", "", .)
-pca_df <- left_join(tab, meta_df) %>%
-  filter(!is.na(EV1))
+diss_males <- diss_mat[colnames(diss_mat) %in% male_ids,row.names(diss_mat) %in% male_ids]
 
-pca_df$id <- pca_df$id %>% gsub("whtstbk_gbs_|brds_", "", .)
-pca_df$id <- pca_df$id %>% gsub("NG-5241_[0-9]*_STD_", "", .)
+diss_males <- data.frame(diss_males)
+diss_males$id <- row.names(diss_males)
+diss_males <- gather(diss_males, key = id2, value = diss, -id)
+diss_males <- left_join(diss_males, meta_df)
 
-# percent variance explained by PCs
-var_prop <- pca$varprop[1:2]
-var_prop <- pca$varprop[1:2]*100
-var_prop <- signif(var_prop, 2)
+
+# create long version of matrix
+diss_df_raw <- data.frame(diss_mat)
+diss_df_raw$id <- row.names(diss_mat)
+
+diss_df1 <- gather(diss_df_raw, key = id2, value = diss, -id)
+names(diss_df1) <- c("id", "id2", "diss")
+diss_df1 <- left_join(diss_df1, meta_df)
+
+diss_df2 <- data.frame(diss_df1[,2])
+names(diss_df2)[1] <- c("id")
+diss_df2 <- left_join(diss_df2, meta_df)
+
+diss_df <- data.frame(diss_df1[,c(1:3, 5, 8, 9)], diss_df2[, c(3,6:7)]) 
+names(diss_df)[4:9] <- c("year_1", "cluster_1", "sex_1", "year_2", "cluster_2", "sex_2")
+
+diss_df <- diss_df %>%
+  mutate(year_type = ifelse(year_1 == year_2, "same", "different")) %>%
+  mutate(cluster_type = ifelse(cluster_1 == cluster_2, "same", "different")) %>%
+  mutate(sex_type = ifelse(sex_1 == sex_2, "same", "different"))
+
+# Define palette
 
 ################################################################################
 # plots
 ################################################################################
+
+# heat map
+myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")), space="Lab")
+
+diss_df %>%
+  ggplot(aes(x = id, y = id2, fill = diss))+
+  geom_tile() +
+  scale_fill_gradientn(colours = myPalette(100))+
+  scale_y_discrete(expand = c(0, 0))+
+  scale_x_discrete(expand = c(0, 0))+
+  coord_equal()+
+  theme_bw()+
+  theme(axis.text=element_text(size=6),
+        axis.title=element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+# strip plot
+
+diss_df %>%
+  group_by(year_type, cluster_type, id) %>%
+  summarise(mean_diss = mean(diss)) %>% ungroup %>%
+  mutate(year_type = factor(year_type)) %>%
+  mutate(cluster_type = factor(cluster_type)) %>%
+  ggplot(aes(x = year_type, fill = cluster_type, y = mean_diss, color = cluster_type))+
+  geom_point(position=position_jitterdodge(), alpha = 0.5)+
+  stat_summary(fun.y = 'mean', geom = 'errorbarh', 
+               aes(xmin = (as.numeric(year_type)-as.numeric(cluster_type)), xmax = as.numeric(year_type)+as.numeric(cluster_type)), height = 0)
+
+  ggplot(data = my.data, aes(x = tag2, y = values, color = as.factor(class))) +
+  geom_jitter(position = position_jitter(width = .4)) +
+   +
+  scale_x_continuous(breaks = breaks, labels = levels(my.data$tag))
+  
+  diss_df %>%
+    group_by(year_type, cluster_type, id) %>%
+    summarise(mean_diss = mean(diss)) %>% ungroup %>%
+    mutate(year_type = factor(year_type)) %>%
+    mutate(cluster_type = factor(cluster_type)) %>%
+  with(., as.numeric(year_type)-as.numeric(cluster_type)+1)
+
+
+
+
 
 # color palatte
 
