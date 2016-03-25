@@ -1,4 +1,7 @@
-library(rgdal)
+
+
+#min     max
+#x  210068  767668library(rgdal)
 library(raster)
 library(RColorBrewer)
 library("viridis")
@@ -12,9 +15,6 @@ getDriverLongName(getDriver(x))
 grad <- seq(1, 550, by = 2)
 pal <- viridis(length(grad))
 pal <- colorRampPalette(c("black","white"),length(grad))
-
-#min     max
-#x  210068  767668
 #y 4797718 5239478
 
 xx<-asSGDF_GROD(x, output.dim=c(5000, 5000))

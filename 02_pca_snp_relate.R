@@ -1,11 +1,12 @@
-
 # pacakge installation
-# library(devtools)
+#library(devtools)
 #source("http://bioconductor.org/biocLite.R")
 #biocLite("gdsfmt")
 #biocLite("SNPRelate")
 # install_github("slowkow/ggrepel")
-# install_github("dill/beyonce")
+#install_github("dill/beyonce")
+
+#install_github("leeper/colourlovers")
 
 ################################################################################
 # initials
@@ -15,13 +16,14 @@
 library("ggplot2")
 library("gdsfmt")
 library("SNPRelate")
-library("readr")
 library("dplyr")
-library("MASS")
-library("fpc")
+library("tidyr")
 library("ggthemes")
-library("ggrepel")
 library("RColorBrewer")
+library("bigmemory")
+library("cowplot")
+library("viridis")
+library("colourlovers")
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
@@ -35,17 +37,26 @@ meta_df <- read.csv("metadata/mega_meta.csv")
 
 # raw snps (raw ped file)
 #raw_snps <- data.frame(fread("data/snp_tables/whtstbk_all_pruned.gz", stringsAsFactors = FALSE, header = TRUE))
-raw_snps <- read.table("data/snp_tables/whtstbk_all_pruned.gz", header = TRUE, stringsAsFactors = FALSE)
+geno_matrix <- read.big.matrix("data/snp_tables/whtstbk_all_pruned.raw", sep=" ", header = TRUE)
+geno_matrix  <- geno_matrix[,-c(1:6)]
+
+# read in FIDs
+
+fid_df <- read.table(pipe("cut -d \" \" -f1 data/snp_tables/whtstbk_all_pruned.raw"), header = TRUE)
 
 # extract genotypes into matrix
-geno_matrix <- data.matrix(raw_snps[,-c(1:6)])
-sample_id <- raw_snps$FID
-snp_id <- names(raw_snps[,-c(1:6)])
-
-# reclaim memory
-rm(raw_snps)
+sample_id <- fid_df$FID
+snp_id <- colnames(geno_matrix)
 
 # fix formatting irregularities
+fstat_label_to_columns <- function(x){
+  if(!is.null(names(x))){
+    x <- names(x)
+  }
+  chr <- gsub("\\:.*", "", x)
+  pos <- gsub("[^0-9]", "", x)
+  data.frame(chr, pos)
+}
 pos_df <- snp_id %>% fstat_label_to_columns()
 pos_df <- pos_df %>%
   mutate(chr = gsub("Un", "XXII", chr)) %>%
@@ -55,7 +66,7 @@ pos_df <- pos_df %>%
 ################################################################################
 # create/open gen object 
 ################################################################################
-      
+
 #snpgdsCreateGeno("data/snp_relate/whtstbk_all_pruned.gds", genmat = geno_matrix, 
 #                 sample.id = sample_id, snpfirstdim = FALSE, 
 #                 snp.id = snp_id, snp.chromosome = pos_df$chr, snp.position = pos_df$pos)
@@ -73,14 +84,16 @@ genofile_all <- snpgdsOpen("data/snp_relate/whtstbk_all_pruned.gds", allow.dupli
 ################################################################################
 
 # odd samples to remove (e.g. low data)
-pca_samples <- sample_id[!grepl("SK36|LN30|SR20|LN29|SR15|whtstbk_gbs_2012_brds_SR16", sample_id)]
+bad_samples <- c("SK36|LN30|SR20|LN29|SR15|whtstbk_gbs_2012_brds_SR16|whtstbk_gbs_2012_brds_SR12|whtstbk_gbs_2012_brds_PP8|whtstbk_gbs_2012_brds_CP21|CP23")
+pca_samples <- sample_id[!grepl(bad_samples, sample_id)]
+
 
 #diss <- snpgdsDiss(genofile_all, sample.id = pca_samples)
 #clust <- snpgdsHCluster(diss)
 #tmp <- snpgdsDrawTree(clust)
 
 # do the actual PCA
-pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16, sample.id = pca_samples, missing.rate = 0.05, maf = 0.05)
+pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16, sample.id = pca_samples, missing.rate = 0.01, maf = 0.05)
 #pca <- snpgdsPCA(genofile_all, num.thread = 3, eigen.cnt = 16, missing.rate = 0.05, maf = 0.05)
 
 # extract loadings
@@ -140,8 +153,11 @@ pop_names <- c("Antigonish Land", "Black River", "Canal Lake", "Captain's Pond",
                "Milford Haven", "Middle River", "River Tillard", "St. Francais Harbour", "Sheet Harbour", "Skye River",
                "Salmon River", "Porper Pond", "Pomquet", "Right's River")
 
-pca_df %>%
+palette4 <- clpalette('694737')$colors %>% as.character %>% paste0("#", .)
+
+figure_2 <- pca_df %>%
   mutate(Year = as.factor(year) %>% reorder (., . == "2012")) %>%
+  mutate(year_pch = c(21,24)[as.numeric(Year)]) %>%
   mutate(Sex = sex) %>%
   mutate(Sex = ifelse(Sex == "M", "Male", "Female")) %>%
   mutate(Group = cluster_names[match(cluster, cluster_short)]) %>%
@@ -149,84 +165,94 @@ pca_df %>%
   #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
   filter(!is.na(cluster)) %>%
   #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, color = Sex, label = id, shape = Year))+
-  geom_point(size = 3) +
-  theme_bw() +
-  theme(legend.key = element_blank())+
+  ggplot(aes(x = EV1, y = EV2, fill = Sex, shape=Year))+
+  geom_point(aes(fill=Sex, shape=Year), colour="black", size=5)+
   xlab(paste0("PC1 ", "(",var_prop[1], "%)"))+
   ylab(paste0("PC2 ", "(",var_prop[2], "%)"))+
-  #facet_wrap(~region, scales = "free")+
-  #scale_color_manual(values = pal)
-  scale_color_brewer(palette = "Set1")
+  theme_bw() +
+  theme(legend.key = element_blank(),
+        text = element_text(size = 18),
+        axis.title.y = element_text(margin=margin(0,20,0,0), face = "bold"),
+        axis.title.x = element_text(margin=margin(20,0,0,0), face = "bold"))+
+  scale_fill_fivethirtyeight()+
+  scale_shape_manual(values = c(21,24))
+
+ggsave(plot = figure_2, "figures/Figure2.pdf", width = 11, height = 8.5)
+
+figure_S2 <- pca_df %>%
+  mutate(Year = as.factor(year) %>% reorder (., . == "2012")) %>%
+  mutate(year_pch = c(21,24)[as.numeric(Year)]) %>%
+  mutate(Sex = sex) %>%
+  mutate(Sex = ifelse(Sex == "M", "Male", "Female")) %>%
+  mutate(Group = cluster_names[match(cluster, cluster_short)]) %>%
+  mutate(Region = region_names[match(region, region_short)]) %>%
+  #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
+  filter(!is.na(cluster)) %>%
+  #filter(region == "CB") %>%
+  ggplot(aes(x = EV1, y = EV2, fill = Group))+
+  geom_point(aes(fill = Group), colour = "black", size=5, pch = 21)+
+  xlab(paste0("PC1 ", "(",var_prop[1], "%)"))+
+  ylab(paste0("PC2 ", "(",var_prop[2], "%)"))+
+  theme_bw() +
+  theme(legend.key = element_blank(),
+        text = element_text(size = 18),
+        axis.title.y = element_text(margin=margin(0,20,0,0), face = "bold"),
+        axis.title.x = element_text(margin=margin(20,0,0,0), face = "bold"))+
+  scale_fill_manual(values = c("#77AB43", "#008FD5", "#FFFFFF"))
+
+ggsave(plot = figure_S2, "figures/FigureS2.pdf", width = 11, height = 8.5)
  
 
-kmeans_df <- pca_df[,2:10] %>%
+################################################################################
+# test of cluster existance
+################################################################################
+
+# subset of the pcs for  cluster permutation 
+kmeans_df <- pca_df[,2:3] %>%
   filter(!(is.na(EV1)))
 
+# quick k-means
 
-# permutation of cluster separate
+clusters <- kmeans(kmeans_df, 3, iter.max = 1000, nstart = 100)$cluster
 
+cluster_df <- data.frame(pca_df, clusters)
+
+
+# calculate disance matrix using pc data
 d <- dist(kmeans_df, method="euclidean") 
 
-pfit <- hclust(d, method="ward.D")  
-
-plot(pfit, labels = pca_df$id, cex = 0.2)   
-
-
 # load the fpc package
+library("fpc")
 
-
-# set the desired number of clusters                               
-kbest.p <- 3      
-
-#   Run clusterboot() with hclust 
-#   ('clustermethod=hclustCBI') using Ward's method 
-#   ('method="ward"') and kbest.p clusters 
-#   ('k=kbest.p'). Return the results in an object 
-#   called cboot.hclust.
-cboot.hclust <- clusterboot(pmatrix, count = FALSE, B = 10000, 
+# run clusterboot on pca data
+cboot.hclust <- clusterboot(d, count = TRUE, B = 1000, 
                             clustermethod=kmeansCBI,
                             krange = 3, bootmethod=c("boot","noise","jitter"))
 
-#Clusterwise Jaccard bootstrap (omitting multiple points) mean:
-#  [1] 0.8923649 0.9042921 0.8957095
-
-pca_df$sex<- as.factor(kmeans(kmeans_df , 2, iter.max = 1000, nstart = 100)$cluster)
-
-# force MH5 into the GY cluster
-cluster_labels <- c("M", "F")
-pca_df$sex <- cluster_labels[match(pca_df$sex, c(1,2))]
-#pca_df$cluster[pca_df$id =="MH5"] <- "cmn"
-
-pca_df %>%
-  #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, color = as.factor(sex), label = id))+
-  geom_text(size = 5)
-
-meta_df <- left_join(meta_df[,-5], pca_df[,c("id", "sex")])
-
-write.csv(meta_df, file = "metadata/mega_meta.csv", row.names = FALSE)
-
-# extract the loadings for each snps
-
-load_df <- snp_id %>% as.character %>% fstat_label_to_columns
-pca_load <- snpgdsPCASNPLoading(pca, genofile)
-load_df <- load_df %>%
-  mutate(chr = gsub("Un", "XXII", chr)) %>%
-  mutate(chr = gsub("chr", "", chr) %>% as.character %>% as.roman %>% as.integer)
-  
-load_df$load <- pca_load$snploading[1,] 
-
-load_df <- load_df%>%
-  mutate(pos = as.character(pos) %>% as.numeric) %>%
-  arrange(chr, pos)
-
-load_df %>%
-  ggplot(aes(x = pos, y = abs(load)))+
-  geom_point(size = 0.5)+
-  #geom_smooth()+
-  facet_wrap(~chr)
-
-pca_df$region[83] <- "HA"
-
-snpgdsFst(genofile, sample.id = , population = pca_df$region, method="W&H02")
+# * Cluster stability assessment *
+#   Cluster method:  kmeans 
+# Full clustering results are given as parameter result
+# of the clusterboot object, which also provides further statistics
+# of the resampling results.
+# Number of resampling runs:  1000 
+# 
+# Number of clusters found in data:  3 
+# 
+# Clusterwise Jaccard bootstrap (omitting multiple points) mean:
+#   [1] 0.9203614 0.9066442 0.8857714
+# dissolved:
+#   [1]   0  48 165
+# recovered:
+#   [1] 807 790 794
+# Clusterwise Jaccard replacement by noise mean:
+#   [1] 0.9435032 0.9280240 0.9104470
+# dissolved:
+#   [1]   0  49 155
+# recovered:
+#   [1] 865 850 844
+# Clusterwise Jaccard jittering mean:
+#   [1] 0.9365534 0.9274288 0.9123906
+# dissolved:
+#   [1]   0  48 113
+# recovered:
+#   [1] 839 839 839

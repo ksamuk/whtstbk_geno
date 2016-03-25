@@ -17,7 +17,7 @@ select <- dplyr::select
 
 args <- commandArgs(trailingOnly = TRUE)
 #plink_file <- args[1]
-plink_file <- list.files("data/snp_tables/", pattern = "outgroup_2014", full.names = TRUE)
+plink_file <- list.files("data/snp_tables/", pattern = "lcr_dk_join.*.raw", full.names = TRUE)
 #output_folder <- args[2]
 output_folder <- "data/treemix"
 
@@ -132,9 +132,7 @@ pop_count <- pop_count %>%
 pop_count <- pop_count %>%
   #filter(missing < 2) %>%
   #select(-MH_cbr) %>%
-  select(-SR_NA) %>%
-  select(-LN_NA) %>%
-  select(-RT_cmn)
+  dplyr::select(-SK_NA)
 
 #pop_count <- pop_count[,-16]
 # out file names

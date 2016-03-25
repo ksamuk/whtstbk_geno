@@ -1,4 +1,4 @@
-# plot treemix output
+ # plot treemix output
 
 ################################################################################
 # Libraries
@@ -9,7 +9,7 @@ library("wesanderson")
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
 
-folder <- "data/treemix/wht_cmn_outgroups"
+folder <- "data/treemix/lcr_dk_outgroups"
 
 files <- list.files(folder, full.names = TRUE)
 slugs <- strsplit(files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% unique
@@ -29,7 +29,6 @@ slugs <- strsplit(files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% un
 
 # hack to access labels and colors directly
 
-
 plot_treemix_wrapper <- function(slug, ...){
   
 suppressWarnings(spoof_labels <- get_treemix_d_object(slug))
@@ -38,12 +37,12 @@ spoof_cols <- spoof_labels %>% gsub("[A-Z_]*", "", .) %>% as.factor %>% as.numer
 
 spoof_cols <- rev(brewer.pal(length(unique(spoof_cols)), "Set1"))[spoof_cols]
 
-spoof_labels <- spoof_labels %>% gsub("[a-z_]*", "", .) 
+spoof_labels <- spoof_labels %>% gsub("[a-z_]*", "", .) %>% gsub("NA", "", .) 
 
 suppressWarnings(plot_tree(slug, spoof_labels = spoof_labels, spoof_cols = spoof_cols, ...))
 }
 
-plot_treemix_wrapper(slugs[4], arrow = 0.1, lwd = 3, font = 2, disp = 0.0005, 
+plot_treemix_wrapper(slugs[23], arrow = 0.1, lwd = 3, font = 2, disp = 0.0005, 
                      plus = 0.005, arrow_lwd = 3, plotnames = TRUE, cex = 1, use_viridis = FALSE, use_alpha = FALSE,
                      arrow_lty = 1, ybar = 0.5, shadow = 0.1)
 
@@ -52,12 +51,14 @@ plot_treemix_wrapper(slugs[4], arrow = 0.1, lwd = 3, font = 2, disp = 0.0005,
 # plot residuals
 ################################################################################
 
-pop_order <- data.frame(pop = c("AL_cmn","CL_cmn","CL_wht","DK_dk","GC_cbr","LN_cbr","MH_cmn","MH_wht","MR_cbr","RT_wht","SF_cmn","SF_wht", "SH_cmn","SH_wht","SK_cbr","SR_cmn","SR_wht", "CP_cmn"))
+pop_order <- data.frame(pop = c("DK_dk", "LC_NA", "AL_cmn","CL_cmn","CL_wht","GC_cbr","LN_cbr","MH_cmn","MH_wht","MR_cbr","RT_wht","SF_cmn","SF_wht", "SH_cmn","SH_wht","SK_cbr","SR_cmn","SR_wht", "CP_cmn"))
 pop_order$cluster <- gsub("[^a-z]*", "", pop_order$pop)
 pop_order <- pop_order %>%
   arrange(cluster)
 
-lapply(slugs[4], plot_resid_fixed, pop_order = as.character(pop_order$pop))
+lapply(slugs[11], plot_resid_fixed, pop_order = as.character(pop_order$pop))
+
+plot_resid(slugs[12])
 
 ################################################################################
 # harvest migration edge pvalues
