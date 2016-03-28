@@ -84,7 +84,7 @@ genofile_all <- snpgdsOpen("data/snp_relate/whtstbk_all_pruned.gds", allow.dupli
 ################################################################################
 
 # odd samples to remove (e.g. low data)
-bad_samples <- c("SK36|LN30|SR20|LN29|SR15|whtstbk_gbs_2012_brds_SR16|whtstbk_gbs_2012_brds_SR12|whtstbk_gbs_2012_brds_PP8|whtstbk_gbs_2012_brds_CP21|CP23")
+bad_samples <- c("SK36|SR20|LN29|SR15|whtstbk_gbs_2012_brds_SR16|whtstbk_gbs_2012_brds_SR12|whtstbk_gbs_2012_brds_PP8|whtstbk_gbs_2012_brds_CP21|CP23")
 pca_samples <- sample_id[!grepl(bad_samples, sample_id)]
 
 
@@ -105,7 +105,7 @@ load_df$chr <- load_df$snp %>% gsub("\\..*|chr", "",. ) %>%
 load_df$pos <- load_df$snp %>% gsub("chr.*\\.|_[A-Z]*", "",. ) %>% as.numeric
 load_df <- load_df %>%
   dplyr::select(chr, pos, load_ev1, load_ev2)
-write.table(load_df, "data/stats/whtstbk_2014_pca_loadings.txt", row.names= FALSE, quote = FALSE)
+#write.table(load_df, "data/stats/whtstbk_2014_pca_loadings.txt", row.names= FALSE, quote = FALSE)
 
 # create PCA data frame
 tab <- data.frame(id = pca$sample.id,
@@ -132,76 +132,22 @@ var_prop <- pca$varprop[1:2]*100
 var_prop <- signif(var_prop, 2)
 
 ################################################################################
-# plots
+# standard length
 ################################################################################
 
-# color palatte
+sl_df <- read.csv("metadata/whtstbk_std_length.csv", h = T)
 
-pal <- c(rev(brewer.pal(3, "Set1")), "#984EA3")
-#pal <- rev(wes_palette("Royal2", 3, type = "continuous"))
-#pal <- c("#4bbfc0","#e87348","#3f95ca","#c43896")
+sl_df <- sl_df %>%
+  mutate(id = ifelse(sl_df$year == 2014, paste0(population, individual), paste0("2012_", population, individual))) %>%
+  dplyr::select(id, population, year, std.length)
 
-# clusters
+names(sl_df) <- c("id", "pop", "year", "sl")
 
-# region names
+pca_df <- left_join(pca_df, sl_df, by = c("id", "year"))
+var_df <- data.frame(var_prop)
 
-cluster_short <- c("cmn", "cbr", "wht")
-cluster_names <- c("Mainland Common", "Bras d'Or Common", "White")
-region_short <- c("AN", "CB", "HA", "GY")
-region_names <- c("Antigonish", "Bras d'Or", "Halifax", "Guysborough")
-pop_names <- c("Antigonish Land", "Black River", "Canal Lake", "Captain's Pond", "Gillies Cove", "Little Narrows",
-               "Milford Haven", "Middle River", "River Tillard", "St. Francais Harbour", "Sheet Harbour", "Skye River",
-               "Salmon River", "Porper Pond", "Pomquet", "Right's River")
-
-palette4 <- clpalette('694737')$colors %>% as.character %>% paste0("#", .)
-
-figure_2 <- pca_df %>%
-  mutate(Year = as.factor(year) %>% reorder (., . == "2012")) %>%
-  mutate(year_pch = c(21,24)[as.numeric(Year)]) %>%
-  mutate(Sex = sex) %>%
-  mutate(Sex = ifelse(Sex == "M", "Male", "Female")) %>%
-  mutate(Group = cluster_names[match(cluster, cluster_short)]) %>%
-  mutate(Region = region_names[match(region, region_short)]) %>%
-  #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
-  filter(!is.na(cluster)) %>%
-  #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, fill = Sex, shape=Year))+
-  geom_point(aes(fill=Sex, shape=Year), colour="black", size=5)+
-  xlab(paste0("PC1 ", "(",var_prop[1], "%)"))+
-  ylab(paste0("PC2 ", "(",var_prop[2], "%)"))+
-  theme_bw() +
-  theme(legend.key = element_blank(),
-        text = element_text(size = 18),
-        axis.title.y = element_text(margin=margin(0,20,0,0), face = "bold"),
-        axis.title.x = element_text(margin=margin(20,0,0,0), face = "bold"))+
-  scale_fill_fivethirtyeight()+
-  scale_shape_manual(values = c(21,24))
-
-ggsave(plot = figure_2, "figures/Figure2.pdf", width = 11, height = 8.5)
-
-figure_S2 <- pca_df %>%
-  mutate(Year = as.factor(year) %>% reorder (., . == "2012")) %>%
-  mutate(year_pch = c(21,24)[as.numeric(Year)]) %>%
-  mutate(Sex = sex) %>%
-  mutate(Sex = ifelse(Sex == "M", "Male", "Female")) %>%
-  mutate(Group = cluster_names[match(cluster, cluster_short)]) %>%
-  mutate(Region = region_names[match(region, region_short)]) %>%
-  #filter(!(id %in% c("SR20", "LN29", "SR15", "2012_SF16"))) %>%
-  filter(!is.na(cluster)) %>%
-  #filter(region == "CB") %>%
-  ggplot(aes(x = EV1, y = EV2, fill = Group))+
-  geom_point(aes(fill = Group), colour = "black", size=5, pch = 21)+
-  xlab(paste0("PC1 ", "(",var_prop[1], "%)"))+
-  ylab(paste0("PC2 ", "(",var_prop[2], "%)"))+
-  theme_bw() +
-  theme(legend.key = element_blank(),
-        text = element_text(size = 18),
-        axis.title.y = element_text(margin=margin(0,20,0,0), face = "bold"),
-        axis.title.x = element_text(margin=margin(20,0,0,0), face = "bold"))+
-  scale_fill_manual(values = c("#77AB43", "#008FD5", "#FFFFFF"))
-
-ggsave(plot = figure_S2, "figures/FigureS2.pdf", width = 11, height = 8.5)
- 
+write.table(pca_df, "metadata/pca_df.txt", quote = FALSE, row.names = FALSE)
+write.table(var_df, "metadata/pca_var_df.txt", quote = FALSE, row.names = FALSE)
 
 ################################################################################
 # test of cluster existance

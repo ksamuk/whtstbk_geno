@@ -133,71 +133,7 @@ diss_df <- diss_df %>%
 diss_df <- diss_df %>%
   filter(id != id2)
 
-# Define palette
-
-################################################################################
-# plots
-################################################################################
-
-# IBS strip plot: morphotype comparison vs. year comparison
-
-year_species <- diss_df %>%
-  mutate(cluster_type = ifelse(cluster_1 == cluster_2, "Within Morphotype", "Between Morphotype")) %>%
-  group_by(year_type, cluster_type, id) %>%
-  summarise(mean_diss = mean(diss)) %>% ungroup %>%
-  mutate(year_type = factor(year_type)) %>%
-  mutate(cluster_type = factor(cluster_type)) %>%
-  filter((year_type == "same" & cluster_type =="Between Morphotype") |(year_type == "different" & cluster_type =="Within Morphotype")) %>%
-  ggplot(aes(x = cluster_type, y = mean_diss))+
-  geom_jitter(color = "grey")+
-  stat_summary(fun.y=median, fun.ymin=median, fun.ymax=median, 
-               geom="crossbar", width=0.9, color = "black", fatten = 3)+
-  theme_minimal() +
-  theme(panel.grid.major.x = element_blank(),
-        legend.position = "none",
-        panel.margin = grid::unit(0, "cm"),
-        axis.title.y=element_text(margin=margin(0,20,0,0), face = "bold"),
-        axis.title.x=element_text(margin=margin(20,0,0,0), face = "bold"))+
-  ylab("Genetic Similarity\n(% Shared SNPs)")+
-  xlab("Comparison Type")+
-  scale_x_discrete(breaks=c("Between Morphotype", "Within Morphotype"),
-                   labels=c("Within Year\nWhite vs. Common", "Between Year\n White vs. White"))+
-  ylim(0.74, 0.775)
-
-sex_species <- diss_df %>%
-  filter(year_1 == 2014 & year_2 ==2014) %>%
-  #filter(cluster_1 == "wht" | cluster_2 == "wht") %>%
-  #mutate(cluster_type = ifelse(cluster_1 == "wht" & cluster_2 == "wht", "White vs.\n White", ifelse(cluster_1 == "cmn" & cluster_2 == "cmn", "Common vs.\n Common", "White vs.\n Common"))) %>%
-  mutate(cluster_type = ifelse(cluster_1 == cluster_2, "Within\n Morphotype", "Between\n Morphotype")) %>%
-  group_by(cluster_type,sex_type, id) %>%
-  summarise(mean_diss = mean(diss)) %>% ungroup %>%
-  mutate(sex_type = factor(sex_type)) %>%
-  mutate(cluster_type = factor(cluster_type)) %>%
-  ggplot(aes(x = sex_type, y = mean_diss, color = sex_type))+
-  #geom_dotplot(binaxis = "y", binwidth = 0.0001)+facet_grid(year_type~.)
-  geom_jitter()+
-  stat_summary(fun.y=median, fun.ymin=median, fun.ymax=median, 
-               geom="crossbar", width=0.9, color = "black", fatten = 3)+
-  #geom_point(position=position_jitterdodge(), alpha = 0.5) +
-  theme_minimal() +
-  facet_grid(.~cluster_type, switch = "x")+
-  theme(panel.grid.major.x = element_blank(),
-        #panel.grid.major.y = element_blank(),
-        #legend.position = "bottom",
-        #legend.direction = "vertical",
-        legend.margin = grid::unit(0, "cm"),
-        axis.text.x = element_blank(),
-        panel.margin = grid::unit(0, "cm"),
-        axis.title.y=element_text(margin=margin(0,20,0,0), face = "bold"),
-        axis.title.x=element_text(margin=margin(20,0,0,0), face = "bold"))+
-  scale_color_brewer("",labels = c("Between\nSexes\n", "Within\nSexes\n"), palette = "Set1") +
-  ylab("\n")+
-  xlab("Comparison Type")+
-  ylim(0.74, 0.775)
-
-
-fig_4 <- plot_grid(year_species, sex_species, align = "hv", labels = "AUTO", rel_widths = c(1, 1.2))
-ggsave("figures/Figure4.pdf", plot = fig_4, width = 11, height = 8.5, scale = 0.8)
+write.table(diss_df, "metadata/diss_df.txt", quote = FALSE, row.names = FALSE)
 
 ################################################################################
 # stats
@@ -211,11 +147,12 @@ year_clust <- diss_df %>%
   summarise(mean_diss = mean(diss)) %>% ungroup %>%
   filter((year_type == "same" & cluster_type =="between_morpho") |(year_type == "different" & cluster_type =="within_morpho")) %>%
   mutate(comparison = paste0(year_type,"_",cluster_type))
-  
+
 
 sex_clust <- diss_df %>%
   filter(year_1 == 2014 & year_2 ==2014) %>%
-  #filter(cluster_1 == "wht" | cluster_2 == "wht") %>%
+  filter(sex_1 == sex_2) %>%
+  mutate(sex_type = ifelse(sex_1 == "F", "Female", "Male")) %>%
   #mutate(cluster_type = ifelse(cluster_1 == "wht" & cluster_2 == "wht", "White vs.\n White", ifelse(cluster_1 == "cmn" & cluster_2 == "cmn", "Common vs.\n Common", "White vs.\n Common"))) %>%
   mutate(cluster_type = ifelse(cluster_1 == cluster_2, "Within Morphotype", "Between Morphotype")) %>%
   group_by(cluster_type,sex_type, id) %>%
@@ -238,26 +175,20 @@ sex_clust %>%
   lm(data = ., mean_diss ~ cluster_type*sex_type) %>%
   anova()
 
-#result
 # Coefficients:
-# Estimate Std. Error  t value Pr(>|t|)    
-#  (Intercept)                                 7.584e-01  1.680e-04 4513.698  < 2e-16 ***
-#    cluster_typeWithin Morphotype               5.557e-03  2.376e-04   23.384  < 2e-16 ***
-#    sex_typesame                                1.235e-03  2.376e-04    5.198 2.42e-07 ***
-#    cluster_typeWithin Morphotype:sex_typesame -1.298e-05  3.361e-04   -0.039    0.969   
-  
-#                        Df    Sum Sq   Mean Sq   F value    Pr(>F)    
-#  cluster_type             1 0.0081940 0.0081940 1091.0396 < 2.2e-16 ***
-#  sex_type                 1 0.0004015 0.0004015   53.4640 5.182e-13 ***
-#  cluster_type:sex_type    1 0.0000000 0.0000000    0.0015    0.9692 
+#   Estimate Std. Error  t value Pr(>|t|)    
+# (Intercept)                                7.597e-01  2.337e-04 3249.848   <2e-16 ***
+#   cluster_typeWithin Morphotype              5.253e-03  3.306e-04   15.890   <2e-16 ***
+#   sex_typeMale                               2.637e-05  3.318e-04    0.079    0.937    
+# cluster_typeWithin Morphotype:sex_typeMale 5.863e-04  4.693e-04    1.249    0.212 
 
-################################################################################
-# LN probe
-################################################################################
-
-diss_df %>%
-  filter(cluster_1 != "cmn" & cluster_2 != "cmn") %>%
-  filter(grepl("CL", id)&grepl("CL", id2)) %>% View
-  mutate(is_ln_20 = (id == "CL50" | id2 == "CL50")) %>%
-  ggplot(aes(x = cluster_type, y = diss, color = is_ln_20))+
-  geom_boxplot()
+# Analysis of Variance Table
+# 
+# Response: mean_diss
+# Df    Sum Sq   Mean Sq  F value Pr(>F)    
+# cluster_type            1 0.0040874 0.0040874 558.2561 <2e-16 ***
+#   sex_type                1 0.0000136 0.0000136   1.8544 0.1739    
+# cluster_type:sex_type   1 0.0000114 0.0000114   1.5610 0.2121    
+# Residuals             528 0.0038659 0.0000073                    
+# ---
+#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
