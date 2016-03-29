@@ -1,3 +1,6 @@
+################################################################################
+# initials
+################################################################################
 
 library(dplyr)
 library(tidyr)
@@ -10,6 +13,10 @@ library(ggthemes)
 
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
+################################################################################
+# raw data
+################################################################################
+
 # plot structure output
 #structure_files <- list.files("data/structure/results_rename", pattern = "simple.[0-9].meanQ",full.names = TRUE)
 structure_files <- list.files("data/structure/results_2014", pattern = "simple.*meanQ",full.names = TRUE)
@@ -21,23 +28,29 @@ meta_df <- read.csv("metadata/mega_meta.csv")
 region_short <- c("AN", "CB", "HA", "GY")
 region_names <- c("Antigonish", "Bras d'Or", "Halifax", "Guysborough")
 
-meta_df <-meta_df %>%
+# meta data
+meta_df <- meta_df %>%
 mutate(region = region_names[match(region, region_short)])
 
+# separated structure ids
 structure_ids <- read.table("data/structure/structure_ids.txt")
+
+################################################################################
+# read in structure data (k1-k3 are significant)
+################################################################################
 
 # make df for each structure run
 str_k2 <- read_structure(structure_files[2], structure_ids, meta_df)
 str_k3 <- read_structure(structure_files[3], structure_ids, meta_df)
-str_k4 <- read_structure(structure_files[4], structure_ids, meta_df)
-str_k5 <- read_structure(structure_files[5], structure_ids, meta_df)
-#str_k6 <- read_structure(structure_files[6], meta_df)
 
+# color palatte
 palette4 <- clpalette('694737')$colors %>% as.character %>% paste0("#", .) %>% rev
 
-
-
 # DISTRUCT-esque plots
+
+################################################################################
+# my personal take on a distruct plot, using ggplot
+################################################################################
 
 myPalette <- colorRampPalette(rev(brewer.pal(3, "Spectral")), space="Lab")
 
@@ -85,6 +98,9 @@ plot_structure <- function(x, k, labels = TRUE){
     scale_fill_discrete()
 }
 
+################################################################################
+# plot k2-3
+################################################################################
 
 # if facetting, this looks pray good bruh
 k2 <- str_k2 %>%
@@ -95,6 +111,10 @@ k3 <- str_k3 %>%
 
 figure_3 <- plot_grid(k2, k3, ncol = 1, rel_heights = c(0.85,1))
 ggsave("figures/Figure3.pdf", plot = figure_3, width = 11, height = 8.5)
+
+################################################################################
+# not run 
+################################################################################
 
 # if k = 2 and NOT facetting, this looks better
 str_k2 %>%

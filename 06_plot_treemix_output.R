@@ -6,16 +6,34 @@
 
 library("dplyr")
 library("wesanderson")
+library("ape")
+library("phangorn")
 list.files("functions", full.names = TRUE) %>% sapply(.,source, verbose = FALSE, echo = FALSE) %>% invisible
 
+# treemix trees with little campbell river (pacific) + denmark outgroups
+lcr_folder <- "data/treemix/lcr_dk_outgroups"
+lcr_files <- list.files(lcr_folder, full.names = TRUE)
+lcr_slugs <- strsplit(lcr_files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% unique
 
-folder <- "data/treemix/lcr_dk_outgroups"
-
-files <- list.files(folder, full.names = TRUE)
-slugs <- strsplit(files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% unique
+# treemix trees with denmark (atlantic) outgroups only
+dk_folder <- "data/treemix/wht_cmn_outgroups"
+dk_files <- list.files(dk_folder, full.names = TRUE)
+dk_slugs <- strsplit(dk_files, "\\.") %>% lapply(., function(x)x[1]) %>% unlist %>% unique
 
 ################################################################################
-# plot trees
+# set up consensus tree
+################################################################################
+
+# bootstrap trees with denmark (atlantic) outgroups only
+boot_file <- "data/treemix/whtstbk_2014cat_trees.tre"
+boot_tree <- read.tree(boot_file)
+
+tree_tmp <- consensus(boot_tree, p = 0.5)
+prop.clades(tree_tmp, boot_tree)->tree_tmp$node.label
+
+
+################################################################################
+# plot treemix wrapper
 ################################################################################
 
 #plot_tree = function(stem, o = NA, cex = 1, disp = 0.003, plus = 0.01, flip = vector(), arrow = 0.05, scale = T, ybar = 0.1, mbar = T, plotmig = T, plotnames = T, xmin = 0, lwd = 1, font = 1)
@@ -42,10 +60,29 @@ spoof_labels <- spoof_labels %>% gsub("[a-z_]*", "", .) %>% gsub("NA", "", .)
 suppressWarnings(plot_tree(slug, spoof_labels = spoof_labels, spoof_cols = spoof_cols, ...))
 }
 
-plot_treemix_wrapper(slugs[23], arrow = 0.1, lwd = 3, font = 2, disp = 0.0005, 
+################################################################################
+# plot dem trees
+################################################################################
+
+# base lcr/dk tree
+plot_treemix_wrapper(lcr_slugs[23], arrow = 0.1, lwd = 3, font = 2, disp = 0.0005, 
                      plus = 0.005, arrow_lwd = 3, plotnames = TRUE, cex = 1, use_viridis = FALSE, use_alpha = FALSE,
                      arrow_lty = 1, ybar = 0.5, shadow = 0.1)
 
+pdf(file = "figures/Figure4.pdf", width = 8.5, height = 4.25)
+
+margins_trees <- c(4,0,0,0)
+par(mfrow=c(1,2), mar = margins_trees)
+
+# consensus tree
+plot(tree_tmp, no.margin = FALSE)
+nodelabels(tree_tmp$node.label/1000, frame = "none", adj = c(0.5, 0))
+
+# best mig edge tree
+plot_treemix_wrapper(dk_slugs[4], arrow = 0.2, lwd = 3, font = 2, disp = 0.0015, 
+                     plus = 0.005, arrow_lwd = 3, plotnames = TRUE, cex = 1, use_viridis = FALSE, use_alpha = FALSE,
+                     arrow_lty = 1, ybar = 0.5, shadow = 0.05)
+dev.off()
 
 ################################################################################
 # plot residuals
@@ -66,7 +103,7 @@ plot_resid(slugs[12])
 
 # this ain't gonna be pretty
 
-treeout_files <- grep("treeout", files, value = TRUE) %>% grep("m0", ., invert = TRUE, value = TRUE)
+treeout_files <- grep("treeout", dk_files, value = TRUE) %>% grep("m0", ., invert = TRUE, value = TRUE)
 
 extract_mig_pvals <- function(tree_out_file){
   
@@ -94,7 +131,7 @@ mig_df <- bind_rows(mig_df)
 # harvest likelihoods
 ################################################################################
 
-llik_files <- grep("llik", files, value = TRUE)
+llik_files <- grep("llik", dk_files, value = TRUE)
 
 extract_llik <- function(llik_file){
   
@@ -114,11 +151,16 @@ llik_df <- bind_rows(llik_df)
 lik_ratio_pval <- list()
 lik_ratio_pval[1] <- NA
 
+lik_ratio_chisq <- list()
+lik_ratio_chisq[1] <- NA
+
 for (i in 2:nrow(llik_df)){
   chi_sq <- (llik_df$llik[i] - llik_df$llik[i-1])*2
+  lik_ratio_chisq[i] <- chi_sq
   lik_ratio_pval[i] <- pchisq(chi_sq, df = 1, lower.tail = FALSE)
+  
 }
 
-data.frame(llik_df, unlist(lik_ratio_pval))
+data.frame(llik_df, unlist(lik_ratio_chisq), unlist(lik_ratio_pval))
 
 
