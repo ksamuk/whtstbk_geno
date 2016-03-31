@@ -61,7 +61,7 @@ suppressWarnings(plot_tree(slug, spoof_labels = spoof_labels, spoof_cols = spoof
 }
 
 ################################################################################
-# plot dem trees
+# plot figure 4
 ################################################################################
 
 # base lcr/dk tree
@@ -83,6 +83,49 @@ plot_treemix_wrapper(dk_slugs[4], arrow = 0.2, lwd = 3, font = 2, disp = 0.0015,
                      plus = 0.005, arrow_lwd = 3, plotnames = TRUE, cex = 1, use_viridis = FALSE, use_alpha = FALSE,
                      arrow_lty = 1, ybar = 0.5, shadow = 0.05)
 dev.off()
+
+################################################################################
+# plot figure s2
+################################################################################
+
+
+pdf(file = "figures/FigureS2.pdf", width = 4.25, height = 4.25)
+
+plot_treemix_wrapper(lcr_slugs[23], arrow = 0.2, lwd = 3, font = 2, disp = 0.0015, 
+                     plus = 0.005, arrow_lwd = 3, plotnames = TRUE, cex = 1, use_viridis = FALSE, use_alpha = FALSE,
+                     arrow_lty = 1, ybar = -10, shadow = 0.05)
+
+dev.off()
+
+# get mean branch lengths for nova scotia to pacific split
+
+boot_file <- "data/treemix/outgroup_bootstrapcat_trees.tre"
+boot_tree <- read.tree(boot_file)
+
+
+compute_branch_length <- function(tree, node1 = 23, node2 = 21){
+  
+  dist.nodes(tree)[node1, node2]
+}
+
+atl_pac_branch <- lapply(boot_tree, compute_branch_length) %>% unlist
+
+atl_mean <- lm(atl_pac_branch~1)
+# mean: 0.04992031
+
+confint(atl_mean)
+#2.5 %     97.5 %
+#  (Intercept) 0.04986507 0.04997555
+
+compute_wht_cmn_length <- function(tree, node1 = 23, node2 = 21){
+  
+  dist.nodes(tree)[node1, node2]
+}
+
+# ortis et al:
+
+
+
 
 ################################################################################
 # plot residuals

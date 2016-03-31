@@ -9,7 +9,10 @@ library("ggplot2")
 
 # Ks estimated by Baocheng Guo in BMC Genomics 2013
 mu1 <- 7.1*(10)^-9
+# mu estimated by Marius Roesti in Nat Comm. 2016
 mu2 <- 6.8*(10)^-8
+
+
 theta <- 9723.27623947
 Nref <-  theta / (4*mu1*30000*10000*0.8)
 Nref <-  theta / (4*mu1*20000*10000*0.7)
