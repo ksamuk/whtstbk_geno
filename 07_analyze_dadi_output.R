@@ -138,17 +138,12 @@ dadi_df_im %>%
   #filter(pop %in% c("SR")) %>%
   filter(!is.na(m21)) %>%
   group_by(pop) %>%
-  #filter(log_lik == max(log_lik)) %>% 
-  View
+  filter(log_lik == max(log_lik))
 
-# Source: local data frame [2 x 15]
-# Groups: pop [2]
-# 
-# pop   run  model         s       nu1       nu2      div_t      m12      m21   log_lik         theta
-# (chr) (chr) (fctr)     (dbl)     (dbl)     (dbl)      (dbl)    (dbl)    (dbl)     (dbl)         (chr)
-# 1    CL    21     im 0.2757301 0.1468878 0.2133241  0.5780141 39.61412 21.10621 -1980.307 10521.1294381
-# 2    SR    28     im 0.4416730 0.5793114 0.5266125 11.4618391 19.46700 22.06862 -3325.019 5876.76388284
-
+#pop   run  model         s       nu1       nu2     div_t      m12      m21   log_lik         theta     grid
+#(chr) (chr) (fctr)     (dbl)     (dbl)     (dbl)     (dbl)    (dbl)    (dbl)     (dbl)         (chr)    (chr)
+#1    CL    21     im 0.2757301 0.1468878 0.2133241 0.5780141 39.61412 21.10621 -1980.307 10521.1294381 50 60 70
+#2    SR   18a     im 0.1744412 0.2025371 0.3132589 1.1991450 39.60331 18.91881 -2641.557 10048.3453029 50 60 70
 
 # what are the best fit 'split-mig' models for each pair of populations?
 
