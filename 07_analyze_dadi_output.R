@@ -267,27 +267,28 @@ mig_2_1 <- (m21/(2*n_ref))*pop_size2
 # plots of model uncertainty
 ################################################################################
 
-dadi_im_ln %>%
+figure_s3 <- dadi_im_ln %>%
   filter(pop %in% c("CL", "SR")) %>%
-  ggplot(aes (x = pop, y = value))+
-  geom_jitter(width = 0.1, size = 1)+
-  stat_summary(fun.y=median, fun.ymin=median, fun.ymax=median, 
-               geom="crossbar", width=0.3, color = "red", fatten = 2)+
-  facet_wrap(~coefficient, scales = "free")+
-  ylim(0, NA)+
+  mutate(log_lik = as.numeric(log_lik)) %>%
+  filter(!is.na(log_lik)) %>%
+  #group_by(pop) %>%
+  mutate(log_lik_scale = scale(log_lik)) %>%
+  ungroup %>%
+  ggplot(aes(x = value, y = log_lik))+
+  geom_point(size = 2, color = "grey")+
+  geom_smooth(se = FALSE, color = "black", size = 1)+
+  facet_grid(pop~coefficient, scales = "free")+
   theme_base() +
   theme(legend.background = element_blank(),
         text = element_text(size = 14),
         axis.title.x = element_blank(),
-        legend.title = element_blank(),
-        legend.text = element_text(size = 12),
         legend.justification = c(1, 1), 
-        legend.position = "none",
+        #legend.position = "none",
         #axis.title.y = element_text(margin=margin(0,6,0,0), face = "bold"),
         #axis.title.x = element_text(margin=margin(12,0,0,0), face = "bold"),
-        plot.background = element_rect(color = NA))+
-  scale_fill_fivethirtyeight()
+        plot.background = element_rect(color = NA))
 
+ggsave("figures/FigureS3.pdf", figure_s3, width = 11, height = 8.5)
 
 dadi_split_ln %>%
   filter(pop %in% c("CL", "SR")) %>%
