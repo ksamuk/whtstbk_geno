@@ -288,7 +288,7 @@ figure_s3 <- dadi_im_ln %>%
         #axis.title.x = element_text(margin=margin(12,0,0,0), face = "bold"),
         plot.background = element_rect(color = NA))
 
-ggsave("figures/FigureS3.pdf", figure_s3, width = 11, height = 8.5)
+ggsave("figures/FigureS3.pdf", figure_s3, width = 11, height = 8.5, useDingbats=FALSE)
 
 dadi_split_ln %>%
   filter(pop %in% c("CL", "SR")) %>%
